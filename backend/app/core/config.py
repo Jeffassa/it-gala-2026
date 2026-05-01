@@ -10,14 +10,17 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+psycopg://gala:gala@localhost:5432/gala"
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
-    MAIL_FROM: str = "no-reply@gala.it"
-    MAIL_FROM_NAME: str = "Gala IT Awards"
+    MAIL_FROM: str = "onboarding@resend.dev"
+    MAIL_FROM_NAME: str = "IT Gala 2026"
     MAIL_HOST: str = ""
     MAIL_PORT: int = 587
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
     MAIL_TLS: bool = True
     MAIL_DEBUG: bool = True
+
+    # Resend API (port 443 → fonctionne sur Render free)
+    RESEND_API_KEY: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:
