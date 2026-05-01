@@ -23,7 +23,11 @@ import type {
   Role,
 } from "./types";
 
-export const api = axios.create({ baseURL: "/api/v1" });
+// Dev: Vite proxie /api -> localhost:8000 (rien à configurer)
+// Prod: VITE_API_URL pointe vers le backend déployé (ex: https://it-gala-api.onrender.com/api/v1)
+const baseURL = import.meta.env.VITE_API_URL || "/api/v1";
+
+export const api = axios.create({ baseURL });
 
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
