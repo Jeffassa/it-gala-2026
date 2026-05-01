@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gala-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gala
+      POSTGRES_USER: gala
+      POSTGRES_PASSWORD: gala
+    ports:
+      - "5433:5432"
+    volumes:
+      - gala_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gala -d gala"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: gala-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+
+volumes:
+  gala_pgdata:
