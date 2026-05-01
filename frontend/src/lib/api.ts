@@ -45,9 +45,13 @@ api.interceptors.response.use(
 
 export function apiError(err: unknown): string {
   if (axios.isAxiosError(err)) {
-    const detail = (err.response?.data as { detail?: string })?.detail;
+    const detail: unknown = (err.response?.data as { detail?: unknown } | undefined)?.detail;
     if (typeof detail === "string") return detail;
-    if (Array.isArray(detail)) return detail.map((d: any) => d.msg).join(", ");
+    if (Array.isArray(detail)) {
+      return (detail as Array<{ msg?: string }>)
+        .map((d) => (d && typeof d === "object" && "msg" in d ? String(d.msg) : String(d)))
+        .join(", ");
+    }
   }
   return "Une erreur est survenue";
 }
