@@ -9,6 +9,21 @@ import { formatDate, formatDateTime, ticketTypeLabel } from "@/lib/format";
 import type { Gala, ScanResult, Ticket } from "@/lib/types";
 import { toast } from "@/store/toast";
 
+// Beep court pour feedback audio sur scan reussi
+function beep(freq = 880, ms = 120) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = "sine";
+    gain.gain.value = 0.15;
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, ms);
+  } catch { /* ignore */ }
+}
+
 export default function ControllerPage() {
   const [gala, setGala] = useState<Gala | null>(null);
   const [stats, setStats] = useState({ total_tickets: 0, scanned_tickets: 0, remaining: 0, my_scans: 0 });
@@ -18,6 +33,8 @@ export default function ControllerPage() {
   const [manualCode, setManualCode] = useState("");
   const qrRef = useRef<Html5Qrcode | null>(null);
   const lastScanRef = useRef<{ code: string; at: number } | null>(null);
+  // Cache local des codes deja scannes : feedback instantane sans round-trip serveur
+  const localCacheRef = useRef<Map<string, ScanResult>>(new Map());
 
   useEffect(() => { galaApi.active().then(setGala); }, []);
   useEffect(() => {
@@ -35,16 +52,33 @@ export default function ControllerPage() {
 
   async function handleCode(code: string) {
     const now = Date.now();
-    if (lastScanRef.current?.code === code && now - lastScanRef.current.at < 2500) return;
+    // Anti-doublon de scan dans une fenetre courte
+    if (lastScanRef.current?.code === code && now - lastScanRef.current.at < 1200) return;
     lastScanRef.current = { code, at: now };
+
+    // Cache local : si code deja vu cette session, feedback instantane (pas de round-trip)
+    const cached = localCacheRef.current.get(code);
+    if (cached) {
+      // On affiche immediatement comme "deja scanne"
+      const instant: ScanResult = cached.ok
+        ? { ok: false, message: "Ticket déjà scanné dans cette session", ticket: cached.ticket, already_scanned: true }
+        : cached;
+      setLastResult(instant);
+      if (instant.already_scanned) toast.warn(instant.message);
+      else if (!instant.ok) toast.error(instant.message);
+      beep(440, 80);
+      return;
+    }
+
     try {
       const res = await scanApi.scan(code);
+      localCacheRef.current.set(code, res);
       setLastResult(res);
-      if (res.ok) toast.success(res.message);
-      else if (res.already_scanned) toast.warn(res.message);
-      else toast.error(res.message);
+      if (res.ok) { toast.success(res.message); beep(880, 100); }
+      else if (res.already_scanned) { toast.warn(res.message); beep(440, 80); }
+      else { toast.error(res.message); beep(220, 200); }
       refresh();
-    } catch (err) { toast.error(apiError(err)); }
+    } catch (err) { toast.error(apiError(err)); beep(220, 300); }
   }
 
   async function startCamera() {
@@ -54,7 +88,12 @@ export default function ControllerPage() {
       qrRef.current = qr;
       await qr.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 280, height: 280 } },
+        {
+          fps: 20,                                   // 2x plus reactif
+          qrbox: { width: 280, height: 280 },
+          aspectRatio: 1.333,
+          disableFlip: false,
+        },
         (decoded) => handleCode(decoded.trim()),
         () => undefined
       );

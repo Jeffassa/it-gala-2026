@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { Check, Heart, Mail, Search, Ticket as TicketIcon, Users, Wallet } from "lucide-react";
+import { Check, Edit3, GraduationCap, Heart, Mail, Search, Ticket as TicketIcon, User as UserIcon, Users, Wallet, X } from "lucide-react";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Empty } from "@/components/Empty";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
 import { TicketQR } from "@/components/TicketQR";
-import { apiError, galaApi, ticketApi } from "@/lib/api";
+import { apiError, galaApi, studentApi, ticketApi } from "@/lib/api";
 import { formatDateTime, formatMoney, ticketTypeLabel } from "@/lib/format";
-import type { AttendeeStatus, Gala, Ticket, TicketType } from "@/lib/types";
+import type { AttendeeStatus, Gala, Student, Ticket, TicketType } from "@/lib/types";
 import { toast } from "@/store/toast";
 
 const PRICE_TABLE: Record<TicketType, number> = {
@@ -194,9 +194,68 @@ function SellModal({ type, gala, onClose, onSold }: { type: TicketType | null; g
   });
   const [saving, setSaving] = useState(false);
 
+  // Etat du picker etudiant
+  const [pickedStudent, setPickedStudent] = useState<Student | null>(null);
+  const [studentQuery, setStudentQuery] = useState("");
+  const [studentResults, setStudentResults] = useState<Student[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [manualMode, setManualMode] = useState(false);
+
   useEffect(() => {
-    if (type) setForm({ buyer_full_name: "", buyer_email: "", buyer_phone: "", partner_full_name: "", group_size: 5, attendee_status: "regular" });
+    if (type) {
+      setForm({ buyer_full_name: "", buyer_email: "", buyer_phone: "", partner_full_name: "", group_size: 5, attendee_status: "regular" });
+      setPickedStudent(null);
+      setStudentQuery("");
+      setStudentResults([]);
+      setManualMode(false);
+    }
   }, [type]);
+
+  // Recherche etudiants debouncee
+  useEffect(() => {
+    if (manualMode || pickedStudent) return;
+    if (!studentQuery.trim()) {
+      setStudentResults([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await studentApi.list({ q: studentQuery.trim(), limit: 12 });
+        setStudentResults(res);
+      } catch { /* silent */ }
+      finally { setSearching(false); }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [studentQuery, manualMode, pickedStudent]);
+
+  function selectStudent(s: Student) {
+    setPickedStudent(s);
+    setForm({
+      ...form,
+      buyer_full_name: s.full_name,
+      buyer_email: s.email ?? "",
+      buyer_phone: s.phone ?? "",
+    });
+    setStudentResults([]);
+    setStudentQuery("");
+  }
+
+  function clearStudent() {
+    setPickedStudent(null);
+    setForm({ ...form, buyer_full_name: "", buyer_email: "", buyer_phone: "" });
+  }
+
+  function switchToManual() {
+    setManualMode(true);
+    setPickedStudent(null);
+    setStudentResults([]);
+  }
+
+  function switchToPicker() {
+    setManualMode(false);
+    setForm({ ...form, buyer_full_name: "", buyer_email: "", buyer_phone: "" });
+  }
 
   if (!type) return null;
   const price = PRICE_TABLE[type];
@@ -228,8 +287,90 @@ function SellModal({ type, gala, onClose, onSold }: { type: TicketType | null; g
   return (
     <Modal open={!!type} onClose={onClose} size="lg" title={title}>
       <form onSubmit={submit} className="space-y-4">
+
+        {/* PICKER ETUDIANT */}
+        {!manualMode && !pickedStudent && (
+          <div className="bg-bg-elev2 border border-line rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs uppercase tracking-wider text-accent font-semibold inline-flex items-center gap-1.5">
+                <GraduationCap size={14} /> Sélectionner un étudiant ESATIC
+              </span>
+              <button type="button" onClick={switchToManual} className="text-xs text-ink-muted hover:text-accent inline-flex items-center gap-1">
+                <Edit3 size={12} /> Saisir manuellement
+              </button>
+            </div>
+            <div className="relative">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint" />
+              <input
+                className="input pl-10"
+                placeholder="Rechercher par matricule, nom ou email..."
+                value={studentQuery}
+                onChange={(e) => setStudentQuery(e.target.value)}
+                autoFocus
+              />
+              {searching && <Spinner size={14} />}
+            </div>
+            {studentResults.length > 0 && (
+              <div className="mt-2 max-h-64 overflow-y-auto border border-line rounded-lg divide-y divide-line">
+                {studentResults.map((s) => (
+                  <button
+                    type="button"
+                    key={s.id}
+                    onClick={() => selectStudent(s)}
+                    className="w-full text-left p-3 hover:bg-bg-elev3 transition flex items-center gap-3"
+                  >
+                    <span className="icon-tile icon-tile-primary w-9 h-9 shrink-0">
+                      <UserIcon size={16} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{s.full_name}</p>
+                      <p className="text-xs text-ink-muted truncate">
+                        <span className="font-mono">{s.matricule}</span>
+                        {s.promotion ? ` · ${s.promotion}` : ""}
+                        {s.email ? ` · ${s.email}` : ""}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {studentQuery && !searching && studentResults.length === 0 && (
+              <p className="text-xs text-ink-muted mt-2">
+                Aucun étudiant trouvé. <button type="button" onClick={switchToManual} className="text-accent hover:underline">Saisir manuellement</button>.
+              </p>
+            )}
+          </div>
+        )}
+
+        {pickedStudent && (
+          <div className="bg-accent/10 border border-accent-soft/40 rounded-xl p-4 flex items-center gap-3">
+            <span className="icon-tile icon-tile-accent w-10 h-10 shrink-0">
+              <UserIcon size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold truncate">{pickedStudent.full_name}</p>
+              <p className="text-xs text-ink-muted truncate">
+                <span className="font-mono">{pickedStudent.matricule}</span>
+                {pickedStudent.promotion ? ` · ${pickedStudent.promotion}` : ""}
+              </p>
+            </div>
+            <button type="button" onClick={clearStudent} className="btn btn-ghost btn-sm">
+              <X size={14} /> Changer
+            </button>
+          </div>
+        )}
+
+        {manualMode && (
+          <div className="flex items-center justify-end">
+            <button type="button" onClick={switchToPicker} className="text-xs text-accent hover:underline inline-flex items-center gap-1">
+              <GraduationCap size={12} /> Sélectionner un étudiant pré-importé
+            </button>
+          </div>
+        )}
+
+        {/* CHAMPS DU FORMULAIRE */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="label">Nom complet de l'acheteur</label><input className="input" required value={form.buyer_full_name} onChange={(e) => setForm({ ...form, buyer_full_name: e.target.value })} /></div>
+          <div><label className="label">Nom complet de l'acheteur</label><input className="input" required value={form.buyer_full_name} onChange={(e) => setForm({ ...form, buyer_full_name: e.target.value })} readOnly={!!pickedStudent} /></div>
           <div><label className="label">Email</label><input className="input" type="email" required value={form.buyer_email} onChange={(e) => setForm({ ...form, buyer_email: e.target.value })} /></div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -262,7 +403,7 @@ function SellModal({ type, gala, onClose, onSold }: { type: TicketType | null; g
 
         <div className="flex justify-end gap-2 pt-4 border-t border-line">
           <button type="button" onClick={onClose} className="btn btn-secondary">Annuler</button>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
+          <button type="submit" className="btn btn-primary" disabled={saving || (!form.buyer_full_name || !form.buyer_email)}>
             {saving ? <Spinner size={16} /> : <><Check size={16} /> Émettre le ticket</>}
           </button>
         </div>
