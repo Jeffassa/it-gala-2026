@@ -65,6 +65,10 @@ export const authApi = {
       .post<AuthResponse>("/auth/register", { full_name, email, password, school_promotion })
       .then((r) => r.data),
   me: () => api.get<User>("/auth/me").then((r) => r.data),
+  forgotPassword: (email: string) =>
+    api.post<{ message: string }>("/auth/forgot-password", { email }).then((r) => r.data),
+  resetPassword: (token: string, new_password: string) =>
+    api.post<{ message: string }>("/auth/reset-password", { token, new_password }).then((r) => r.data),
 };
 
 /* ============ Galas ============ */

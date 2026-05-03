@@ -157,6 +157,14 @@ export default function LoginPage() {
               />
             </Field>
 
+            {mode === "login" && (
+              <div className="text-right -mt-1">
+                <Link to="/forgot-password" className="text-sm text-ink-muted hover:text-accent transition">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+            )}
+
             <button type="submit" className="btn btn-primary btn-lg w-full" disabled={loading}>
               {loading ? (
                 <Spinner size={18} />

@@ -34,3 +34,12 @@ class UserOut(BaseModel):
 
 
 TokenResponse.model_rebuild()
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

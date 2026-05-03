@@ -7,6 +7,7 @@ from app.models.vote import Vote
 from app.models.scan import Scan
 from app.models.notification import Notification, NotificationChannel, NotificationStatus
 from app.models.student import Student
+from app.models.password_reset import PasswordResetToken
 
 __all__ = [
     "User",
@@ -24,4 +25,5 @@ __all__ = [
     "NotificationChannel",
     "NotificationStatus",
     "Student",
+    "PasswordResetToken",
 ]

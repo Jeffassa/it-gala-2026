@@ -4,6 +4,8 @@ import { ToastStack } from "@/components/Toast";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import HomePage from "@/pages/Home";
 import LoginPage from "@/pages/Login";
+import ForgotPasswordPage from "@/pages/ForgotPassword";
+import ResetPasswordPage from "@/pages/ResetPassword";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminGalas from "@/pages/admin/Galas";
@@ -40,6 +42,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomeOrApp />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute roles={["super_admin"]} />}>
           <Route path="/admin" element={<AdminLayout />}>

@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Resend API (port 443 → fonctionne sur Render free)
     RESEND_API_KEY: str = ""
 
+    # Frontend URL for password reset links
+    FRONTEND_URL: str = "http://localhost:5173"
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
