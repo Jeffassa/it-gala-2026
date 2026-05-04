@@ -1,33 +1,15 @@
-import { Mail, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Send } from "lucide-react";
+import { useState } from "react";
 
-import { Empty } from "@/components/Empty";
 import { Spinner } from "@/components/Spinner";
 import { apiError, notificationApi } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
-import type { NotificationItem } from "@/lib/types";
 import { toast } from "@/store/toast";
 
-const STATUS_BADGE: Record<string, string> = {
-  sent: "badge-success",
-  queued: "badge-info",
-  failed: "badge-danger",
-};
-
 export default function AdminNotifications() {
-  const [items, setItems] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [role, setRole] = useState("");
   const [sending, setSending] = useState(false);
-
-  async function load() {
-    setLoading(true);
-    try { setItems(await notificationApi.list()); }
-    finally { setLoading(false); }
-  }
-  useEffect(() => { load(); }, []);
 
   async function broadcast(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +19,6 @@ export default function AdminNotifications() {
       const res = await notificationApi.broadcast(subject, body, role || undefined);
       toast.success(`Message envoyé à ${res.sent}/${res.recipients} destinataires`);
       setSubject(""); setBody(""); setRole("");
-      load();
     } catch (err) { toast.error(apiError(err)); }
     finally { setSending(false); }
   }
@@ -76,51 +57,9 @@ export default function AdminNotifications() {
           </button>
         </div>
         <p className="text-xs text-ink-muted">
-          En mode développement (sans SMTP configuré), les emails sont écrits dans la console du backend mais sont enregistrés ici pour audit.
+          Les emails sont envoyés via le service email configuré (Resend en production).
         </p>
       </form>
-
-      <div>
-        <h3 className="font-serif text-xl font-bold mb-4">Historique des envois</h3>
-        {loading ? <Spinner /> : items.length === 0 ? (
-          <Empty Icon={Mail} title="Aucune notification envoyée" />
-        ) : (
-          <div className="table-wrap overflow-x-auto">
-            <table className="w-full table-fixed">
-              <thead>
-                <tr>
-                  <th className="w-44">Date</th>
-                  <th className="w-20">Canal</th>
-                  <th className="w-56">Destinataire</th>
-                  <th>Objet</th>
-                  <th className="w-64">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((n) => (
-                  <tr key={n.id}>
-                    <td className="whitespace-nowrap text-xs">{formatDateTime(n.created_at)}</td>
-                    <td><span className="badge">{n.channel}</span></td>
-                    <td className="truncate" title={n.recipient}>{n.recipient}</td>
-                    <td className="truncate" title={n.subject ?? ""}>{n.subject ?? "—"}</td>
-                    <td>
-                      <span className={`badge ${STATUS_BADGE[n.status]}`}>{n.status}</span>
-                      {n.error && (
-                        <p
-                          className="mt-1.5 text-[11px] text-red-400 line-clamp-2 leading-snug"
-                          title={n.error}
-                        >
-                          {n.error}
-                        </p>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
