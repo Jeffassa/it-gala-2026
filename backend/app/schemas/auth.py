@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from app.models.user import UserRole
 
@@ -9,9 +9,9 @@ class LoginRequest(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    full_name: str
+    full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128)
     school_promotion: str | None = None
 
 
@@ -41,5 +41,5 @@ class ForgotPasswordRequest(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    token: str
-    new_password: str
+    token: str = Field(min_length=10, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)

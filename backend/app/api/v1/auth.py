@@ -1,5 +1,6 @@
+import logging
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -20,6 +21,8 @@ from app.schemas.auth import (
     UserOut,
 )
 from app.services.email import send_email
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -111,6 +114,11 @@ def _build_reset_email_text(reset_url: str, user_name: str) -> str:
     )
 
 
+_GENERIC_FORGOT_RESPONSE = {
+    "message": "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé."
+}
+
+
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)) -> dict:
     """Send a password reset email if the account exists.
@@ -118,43 +126,46 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     Always returns 200 with a generic message to prevent email enumeration.
     """
     user = db.scalar(select(User).where(User.email == payload.email))
-    if user is not None and user.is_active:
-        # Invalidate any previous unused tokens for this user
-        prev_tokens = db.scalars(
-            select(PasswordResetToken).where(
-                PasswordResetToken.user_id == user.id,
-                PasswordResetToken.used.is_(False),
-            )
-        ).all()
-        for t in prev_tokens:
-            t.used = True
+    if user is None or not user.is_active:
+        return _GENERIC_FORGOT_RESPONSE
 
-        token_str = secrets.token_urlsafe(48)
-        reset_token = PasswordResetToken(
-            user_id=user.id,
-            token=token_str,
-            expires_at=datetime.now(timezone.utc) + timedelta(minutes=30),
+    # Invalidate any previous unused tokens for this user
+    prev_tokens = db.scalars(
+        select(PasswordResetToken).where(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.used.is_(False),
         )
-        db.add(reset_token)
-        db.commit()
+    ).all()
+    for t in prev_tokens:
+        t.used = True
 
-        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token_str}"
-        html = _build_reset_email_html(reset_url, user.full_name)
-        text = _build_reset_email_text(reset_url, user.full_name)
+    token_str = secrets.token_urlsafe(48)
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=token_str,
+        expires_at=datetime.utcnow() + timedelta(minutes=30),
+    )
+    db.add(reset_token)
+    db.commit()
 
-        try:
-            send_email(
-                db,
-                to=user.email,
-                subject="Réinitialisation de votre mot de passe — IT Gala",
-                body=text,
-                html=html,
-                user_id=user.id,
-            )
-        except Exception:
-            pass  # Failure logged in notifications table by send_email
+    reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token_str}"
+    html = _build_reset_email_html(reset_url, user.full_name)
+    text = _build_reset_email_text(reset_url, user.full_name)
 
-    return {"message": "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé."}
+    try:
+        send_email(
+            db,
+            to=user.email,
+            subject="Réinitialisation de votre mot de passe — IT Gala",
+            body=text,
+            html=html,
+            user_id=user.id,
+        )
+    except Exception:
+        # send_email already records a failed Notification row; log here for ops.
+        logger.exception("Password reset email dispatch raised for user_id=%s", user.id)
+
+    return _GENERIC_FORGOT_RESPONSE
 
 
 @router.post("/reset-password")
@@ -166,15 +177,12 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     if reset_token is None or reset_token.used:
         raise HTTPException(status_code=400, detail="Lien invalide ou déjà utilisé")
 
-    if reset_token.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+    if reset_token.expires_at < datetime.utcnow():
         raise HTTPException(status_code=400, detail="Ce lien a expiré. Veuillez refaire une demande.")
 
     user = db.get(User, reset_token.user_id)
-    if user is None:
-        raise HTTPException(status_code=400, detail="Utilisateur introuvable")
-
-    if len(payload.new_password) < 6:
-        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=400, detail="Compte introuvable ou désactivé")
 
     user.hashed_password = hash_password(payload.new_password)
     reset_token.used = True

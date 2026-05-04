@@ -116,7 +116,7 @@ export default function ResetPasswordPage() {
                       className="input pl-11"
                       type="password"
                       required
-                      minLength={6}
+                      minLength={8}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                       className="input pl-11"
                       type="password"
                       required
-                      minLength={6}
+                      minLength={8}
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       placeholder="••••••••"
