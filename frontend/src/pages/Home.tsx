@@ -152,7 +152,7 @@ export default function HomePage() {
           <FadeIn>
             <h1 className="font-serif font-bold leading-[0.95] mb-5 text-balance mx-auto" style={{ fontSize: "clamp(2.6rem, 7vw, 5.6rem)" }}>
               <span className="block">La nuit où la</span>
-              <span className="block" style={{ color: "#F59D98" }}>tech ivoirienne</span>
+              <span className="block primary-text">tech ivoirienne</span>
               <span className="block">se met en lumière.</span>
             </h1>
             <p className="font-serif italic text-accent text-xl mb-4">« {gala?.theme ?? "L'innovation au cœur de l'excellence"} »</p>

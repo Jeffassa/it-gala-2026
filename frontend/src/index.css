@@ -73,7 +73,7 @@
            bg-bg-elev2 border border-line;
   }
   .badge-accent { @apply bg-accent/10 text-accent-bright border-accent-soft/50; }
-  .badge-primary { @apply bg-primary/15 text-red-200 border-primary/40; }
+  .badge-primary { @apply bg-primary/15 text-accent-bright border-primary/40; }
   .badge-success { @apply bg-emerald-600/15 text-emerald-300 border-emerald-700/40; }
   .badge-danger { @apply bg-red-700/15 text-red-300 border-red-800/40; }
   .badge-info { @apply bg-blue-600/15 text-blue-300 border-blue-700/40; }
@@ -97,7 +97,7 @@
   }
 
   .primary-text {
-    background: linear-gradient(180deg, #B5494C, #7B0202);
+    background: linear-gradient(180deg, #FAB7B2, #F59D98);
     -webkit-background-clip: text;
             background-clip: text;
     color: transparent;
