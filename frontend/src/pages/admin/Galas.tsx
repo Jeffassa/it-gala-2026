@@ -1,4 +1,4 @@
-import { Check, Drama, Edit, Plus, Trash2 } from "lucide-react";
+import { Check, Drama, Edit, MonitorPlay, Plus, Trash2, Vote } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Empty } from "@/components/Empty";
@@ -33,6 +33,22 @@ export default function AdminGalas() {
     catch (err) { toast.error(apiError(err)); }
   }
 
+  async function toggleVoting(g: Gala) {
+    try {
+      await galaApi.update(g.id, { voting_open: !g.voting_open });
+      toast.success(g.voting_open ? "Votes fermés" : "Votes ouverts");
+      load();
+    } catch (err) { toast.error(apiError(err)); }
+  }
+
+  async function toggleLive(g: Gala) {
+    try {
+      await galaApi.update(g.id, { live_results_visible: !g.live_results_visible });
+      toast.success(g.live_results_visible ? "Grand écran masqué" : "Grand écran activé");
+      load();
+    } catch (err) { toast.error(apiError(err)); }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-4">
@@ -57,9 +73,10 @@ export default function AdminGalas() {
                   <p className="text-xs uppercase tracking-widest text-ink-muted mb-1">Édition {g.edition_year}</p>
                   <h3 className="font-serif text-2xl font-bold">{g.name}</h3>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-wrap justify-end">
                   {g.is_active ? <span className="badge badge-success">Active</span> : <span className="badge">Archivée</span>}
                   {g.voting_open ? <span className="badge badge-accent">Votes ouverts</span> : <span className="badge">Votes fermés</span>}
+                  {g.live_results_visible ? <span className="badge badge-success">Grand écran ON</span> : <span className="badge">Grand écran OFF</span>}
                 </div>
               </div>
               <p className="font-serif italic text-accent mb-3">« {g.theme} »</p>
@@ -70,6 +87,10 @@ export default function AdminGalas() {
               </dl>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => { setEditing(g); setOpen(true); }} className="btn btn-secondary btn-sm"><Edit size={14} /> Modifier</button>
+                <button onClick={() => toggleVoting(g)} className="btn btn-ghost btn-sm"><Vote size={14} /> {g.voting_open ? "Fermer votes" : "Ouvrir votes"}</button>
+                <button onClick={() => toggleLive(g)} className={`btn btn-sm ${g.live_results_visible ? "btn-accent" : "btn-ghost"}`}>
+                  <MonitorPlay size={14} /> {g.live_results_visible ? "Cacher live" : "Activer live"}
+                </button>
                 <button onClick={() => toggleActive(g)} className="btn btn-ghost btn-sm">{g.is_active ? "Archiver" : "Activer"}</button>
                 <button onClick={() => onDelete(g.id)} className="btn btn-sm border border-red-500/30 text-red-400 hover:bg-red-500/10"><Trash2 size={14} /></button>
               </div>

@@ -19,7 +19,22 @@ router = APIRouter(prefix="/live", tags=["live"])
 def live_results(db: Session = Depends(get_db)) -> dict:
     gala = db.scalar(select(Gala).where(Gala.is_active.is_(True)).order_by(Gala.edition_year.desc()))
     if gala is None:
-        return {"gala": None, "categories": []}
+        return {"gala": None, "categories": [], "visible": False}
+
+    if not gala.live_results_visible:
+        return {
+            "gala": {
+                "id": gala.id,
+                "name": gala.name,
+                "edition_year": gala.edition_year,
+                "theme": gala.theme,
+                "event_date": gala.event_date.isoformat(),
+                "location": gala.location,
+                "voting_open": gala.voting_open,
+            },
+            "categories": [],
+            "visible": False,
+        }
 
     cats = db.scalars(
         select(Category).where(Category.gala_id == gala.id).order_by(Category.order_index, Category.id)
@@ -64,4 +79,5 @@ def live_results(db: Session = Depends(get_db)) -> dict:
             "voting_open": gala.voting_open,
         },
         "categories": payload,
+        "visible": True,
     }

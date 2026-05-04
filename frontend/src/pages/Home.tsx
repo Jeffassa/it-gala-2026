@@ -140,19 +140,19 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
         <div
           className="absolute inset-0 -z-20"
-          style={{ background: "radial-gradient(ellipse at top right, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom left, rgba(240, 165, 12, 0.18), transparent 55%), linear-gradient(180deg, #0E0808 0%, #1A1010 100%)" }}
+          style={{ background: "radial-gradient(ellipse at top right, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom left, rgba(245, 157, 152, 0.18), transparent 55%), linear-gradient(180deg, #0E0808 0%, #1A1010 100%)" }}
         />
         <div className="absolute inset-0 -z-10 glow-grid" />
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(640px,90vw)] h-[min(640px,90vw)] -z-10 animate-shimmer"
-          style={{ background: "radial-gradient(circle, rgba(240,165,12,0.12), transparent 70%)", filter: "blur(60px)" }}
+          style={{ background: "radial-gradient(circle, rgba(245, 157, 152, 0.12), transparent 70%)", filter: "blur(60px)" }}
         />
 
         <div className="relative w-full max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <FadeIn>
             <h1 className="font-serif font-bold leading-[0.95] mb-5 text-balance mx-auto" style={{ fontSize: "clamp(2.6rem, 7vw, 5.6rem)" }}>
               <span className="block">La nuit où la</span>
-              <span className="block primary-text">tech ivoirienne</span>
+              <span className="block" style={{ color: "#F59D98" }}>tech ivoirienne</span>
               <span className="block">se met en lumière.</span>
             </h1>
             <p className="font-serif italic text-accent text-xl mb-4">« {gala?.theme ?? "L'innovation au cœur de l'excellence"} »</p>

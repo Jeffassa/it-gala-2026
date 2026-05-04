@@ -42,12 +42,45 @@ export default function LivePage() {
     );
   }
 
+  if (!data.visible) {
+    return (
+      <div
+        className="min-h-screen grid place-items-center text-center text-white relative overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom right, rgba(245, 157, 152, 0.18), transparent 60%), #050203",
+        }}
+      >
+        <div className="absolute inset-0 glow-grid opacity-50" />
+        <div className="relative max-w-xl px-8">
+          <p className="text-xs uppercase tracking-[0.4em] text-accent mb-4 inline-flex items-center gap-2">
+            <Radio size={14} className="animate-pulse" /> Grand écran · En attente
+          </p>
+          <h1 className="font-serif text-4xl xl:text-6xl font-black mb-4">
+            <span className="primary-text">{data.gala.name}</span> {data.gala.edition_year}
+          </h1>
+          <p className="font-serif italic text-xl text-ink-muted mb-6">« {data.gala.theme} »</p>
+          <div className="rounded-2xl border border-line bg-black/50 backdrop-blur p-8">
+            <p className="font-serif text-2xl mb-3">Les résultats live ne sont pas encore disponibles.</p>
+            <p className="text-ink-muted text-sm leading-relaxed">
+              Le comité d'organisation activera l'affichage des votes pendant la cérémonie.
+              Patientez quelques instants — la diffusion démarrera bientôt.
+            </p>
+          </div>
+          <p className="text-[11px] text-ink-faint mt-6">
+            {formatDate(data.gala.event_date)} · {data.gala.location}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="min-h-screen text-white relative overflow-hidden"
       style={{
         background:
-          "radial-gradient(ellipse at top, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom right, rgba(240, 165, 12, 0.18), transparent 60%), #050203",
+          "radial-gradient(ellipse at top, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom right, rgba(245, 157, 152, 0.18), transparent 60%), #050203",
       }}
     >
       <div className="absolute inset-0 glow-grid opacity-50" />

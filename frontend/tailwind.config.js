@@ -26,10 +26,10 @@ export default {
           tint: "#9C0808",
         },
         accent: {
-          DEFAULT: "#F0A50C",
-          bright: "#FBC23A",
-          soft: "#B57708",
-          deep: "#7E5800",
+          DEFAULT: "#F59D98",
+          bright: "#FAB7B2",
+          soft: "#D67E78",
+          deep: "#9C443F",
         },
         terracotta: {
           DEFAULT: "#B45052",
@@ -41,13 +41,13 @@ export default {
         sans: ['Inter', "system-ui", "sans-serif"],
       },
       boxShadow: {
-        glow: "0 0 32px rgba(240, 165, 12, 0.25)",
+        glow: "0 0 32px rgba(245, 157, 152, 0.30)",
         primary: "0 12px 32px rgba(123, 2, 2, 0.45)",
         elev: "0 24px 48px rgba(0,0,0,0.5)",
       },
       backgroundImage: {
         "primary-gradient": "linear-gradient(135deg, #7B0202 0%, #330808 100%)",
-        "accent-gradient": "linear-gradient(135deg, #FBC23A 0%, #F0A50C 50%, #B57708 100%)",
+        "accent-gradient": "linear-gradient(135deg, #FAB7B2 0%, #F59D98 50%, #D67E78 100%)",
         "regal": "linear-gradient(135deg, #7B0202 0%, #330808 50%, #0E0808 100%)",
       },
       animation: {

@@ -60,7 +60,7 @@ export default function LoginPage() {
         className="relative hidden lg:flex items-center justify-center p-16 overflow-hidden"
         style={{
           background:
-            "radial-gradient(ellipse at top, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom right, rgba(240, 165, 12, 0.18), transparent 60%), linear-gradient(135deg, #1A1010 0%, #0E0808 100%)",
+            "radial-gradient(ellipse at top, rgba(123, 2, 2, 0.45), transparent 60%), radial-gradient(ellipse at bottom right, rgba(245, 157, 152, 0.18), transparent 60%), linear-gradient(135deg, #1A1010 0%, #0E0808 100%)",
         }}
       >
         <div className="absolute inset-0 glow-grid" />

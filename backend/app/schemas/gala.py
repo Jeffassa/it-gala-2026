@@ -35,12 +35,14 @@ class GalaUpdate(BaseModel):
     telegram_url: str | None = None
     is_active: bool | None = None
     voting_open: bool | None = None
+    live_results_visible: bool | None = None
 
 
 class GalaOut(GalaBase):
     id: int
     is_active: bool
     voting_open: bool
+    live_results_visible: bool
     created_at: datetime
 
     class Config:

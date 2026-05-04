@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 
 from app.api.v1 import (
     audit, auth, categories, certificates, galas, live, nominees,
@@ -12,9 +13,23 @@ from app.core.database import Base, engine
 from app.models import *  # noqa: F401,F403
 
 
+def _ensure_columns() -> None:
+    """Idempotent ALTER TABLE for new columns added after initial deploy."""
+    insp = inspect(engine)
+    if "galas" not in insp.get_table_names():
+        return
+    cols = {c["name"] for c in insp.get_columns("galas")}
+    if "live_results_visible" not in cols:
+        with engine.begin() as conn:
+            conn.execute(text(
+                "ALTER TABLE galas ADD COLUMN live_results_visible BOOLEAN DEFAULT FALSE"
+            ))
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    _ensure_columns()
     yield
 
 

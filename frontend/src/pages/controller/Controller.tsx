@@ -176,7 +176,7 @@ export default function ControllerPage() {
                   <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-[3px] border-r-[3px] border-accent-bright" />
                   <div
                     className="absolute inset-x-0 h-0.5 animate-scan-line"
-                    style={{ background: "linear-gradient(90deg, transparent, #FBC23A, transparent)" }}
+                    style={{ background: "linear-gradient(90deg, transparent, #FAB7B2, transparent)" }}
                   />
                 </div>
               </div>

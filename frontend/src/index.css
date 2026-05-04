@@ -6,8 +6,8 @@
   :root {
     --primary: #7B0202;
     --primary-deep: #330808;
-    --accent: #F0A50C;
-    --accent-bright: #FBC23A;
+    --accent: #F59D98;
+    --accent-bright: #FAB7B2;
     --terracotta: #B45052;
   }
   html { scroll-behavior: smooth; overflow-x: clip; }
@@ -15,7 +15,7 @@
     @apply bg-bg text-ink font-sans antialiased min-h-screen;
     background:
       radial-gradient(ellipse 80% 60% at top, rgba(123, 2, 2, 0.18), transparent 70%),
-      radial-gradient(ellipse 60% 80% at bottom right, rgba(240, 165, 12, 0.06), transparent 70%),
+      radial-gradient(ellipse 60% 80% at bottom right, rgba(245, 157, 152, 0.06), transparent 70%),
       #0E0808;
     overflow-x: clip;
     width: 100%;
@@ -41,9 +41,9 @@
   .btn-primary:hover { @apply -translate-y-0.5; box-shadow: 0 16px 40px rgba(123, 2, 2, 0.55); }
   .btn-accent {
     @apply text-bg shadow-glow;
-    background: linear-gradient(135deg, #FBC23A 0%, #F0A50C 50%, #B57708 100%);
+    background: linear-gradient(135deg, #FAB7B2 0%, #F59D98 50%, #D67E78 100%);
   }
-  .btn-accent:hover { @apply -translate-y-0.5; box-shadow: 0 16px 40px rgba(240, 165, 12, 0.45); }
+  .btn-accent:hover { @apply -translate-y-0.5; box-shadow: 0 16px 40px rgba(245, 157, 152, 0.45); }
   .btn-ghost {
     @apply border-line-strong text-ink bg-transparent hover:border-accent hover:text-accent hover:bg-accent/5;
   }
@@ -82,15 +82,15 @@
 
   .glow-grid {
     background-image:
-      linear-gradient(rgba(240, 165, 12, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240, 165, 12, 0.04) 1px, transparent 1px);
+      linear-gradient(rgba(245, 157, 152, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245, 157, 152, 0.04) 1px, transparent 1px);
     background-size: 60px 60px;
     -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
             mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
   }
 
   .accent-text {
-    background: linear-gradient(180deg, #FBC23A, #F0A50C);
+    background: linear-gradient(180deg, #FAB7B2, #F59D98);
     -webkit-background-clip: text;
             background-clip: text;
     color: transparent;

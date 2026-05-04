@@ -30,6 +30,7 @@ export interface Gala {
   telegram_url: string | null;
   is_active: boolean;
   voting_open: boolean;
+  live_results_visible: boolean;
   created_at: string;
 }
 
@@ -114,6 +115,7 @@ export interface LiveResults {
     voting_open: boolean;
   } | null;
   categories: LiveCategory[];
+  visible: boolean;
 }
 
 export interface NotificationItem {
