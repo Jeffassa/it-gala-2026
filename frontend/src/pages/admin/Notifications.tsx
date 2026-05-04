@@ -86,26 +86,33 @@ export default function AdminNotifications() {
           <Empty Icon={Mail} title="Aucune notification envoyée" />
         ) : (
           <div className="table-wrap overflow-x-auto">
-            <table>
+            <table className="w-full table-fixed">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Canal</th>
-                  <th>Destinataire</th>
+                  <th className="w-44">Date</th>
+                  <th className="w-20">Canal</th>
+                  <th className="w-56">Destinataire</th>
                   <th>Objet</th>
-                  <th>Statut</th>
+                  <th className="w-64">Statut</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((n) => (
                   <tr key={n.id}>
-                    <td className="whitespace-nowrap">{formatDateTime(n.created_at)}</td>
+                    <td className="whitespace-nowrap text-xs">{formatDateTime(n.created_at)}</td>
                     <td><span className="badge">{n.channel}</span></td>
-                    <td>{n.recipient}</td>
-                    <td className="max-w-md truncate">{n.subject ?? "—"}</td>
+                    <td className="truncate" title={n.recipient}>{n.recipient}</td>
+                    <td className="truncate" title={n.subject ?? ""}>{n.subject ?? "—"}</td>
                     <td>
                       <span className={`badge ${STATUS_BADGE[n.status]}`}>{n.status}</span>
-                      {n.error && <span className="ml-2 text-xs text-red-400">{n.error}</span>}
+                      {n.error && (
+                        <p
+                          className="mt-1.5 text-[11px] text-red-400 line-clamp-2 leading-snug"
+                          title={n.error}
+                        >
+                          {n.error}
+                        </p>
+                      )}
                     </td>
                   </tr>
                 ))}

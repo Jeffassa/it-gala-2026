@@ -96,7 +96,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="min-h-screen">
+      <div className="min-h-screen min-w-0">
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-bg-elev/85 border-b border-line">
           <div className="flex items-center justify-between px-6 lg:px-8 py-4">
             <div className="flex items-center gap-3">
