@@ -7,6 +7,11 @@ env/
 *.egg-info/
 .pytest_cache/
 
+# Local SQLite databases (dev)
+*.db
+*.sqlite
+*.sqlite3
+
 # Environment
 .env
 .env.local
