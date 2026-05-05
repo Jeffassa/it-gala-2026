@@ -21,6 +21,7 @@ import type {
   User,
   UserWithSpend,
   Role,
+  Souvenir,
 } from "./types";
 
 // Dev: Vite proxie /api -> localhost:8000 (rien à configurer)
@@ -207,4 +208,23 @@ export const userApi = {
   suspend: (id: number) => api.post<User>(`/users/${id}/suspend`).then((r) => r.data),
   activate: (id: number) => api.post<User>(`/users/${id}/activate`).then((r) => r.data),
   remove: (id: number) => api.delete(`/users/${id}`),
+};
+
+/* ============ Souvenirs ============ */
+export const souvenirApi = {
+  list: (gala_id?: number) =>
+    api.get<Souvenir[]>("/souvenirs", { params: { gala_id } }).then((r) => r.data),
+  create: (data: Partial<Souvenir>) => api.post<Souvenir>("/souvenirs", data).then((r) => r.data),
+  update: (id: number, data: Partial<Souvenir>) =>
+    api.patch<Souvenir>(`/souvenirs/${id}`, data).then((r) => r.data),
+  remove: (id: number) => api.delete(`/souvenirs/${id}`),
+  uploadPhoto: (id: number, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return api
+      .post<Souvenir>(`/souvenirs/${id}/photo`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
+  },
 };

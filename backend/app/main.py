@@ -7,7 +7,7 @@ from sqlalchemy import inspect, text
 
 from app.api.v1 import (
     audit, auth, categories, certificates, galas, live, nominees,
-    notifications, reports, scans, students, tickets, users, votes,
+    notifications, reports, scans, students, tickets, users, votes, souvenirs,
 )
 from app.core.config import settings
 from app.core.database import Base, engine
@@ -58,6 +58,7 @@ app.add_middleware(
 
 import os
 os.makedirs("uploads/nominees", exist_ok=True)
+os.makedirs("uploads/souvenirs", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
@@ -81,3 +82,4 @@ app.include_router(certificates.router, prefix=api_v1_prefix)
 app.include_router(notifications.router, prefix=api_v1_prefix)
 app.include_router(audit.router, prefix=api_v1_prefix)
 app.include_router(students.router, prefix=api_v1_prefix)
+app.include_router(souvenirs.router, prefix=api_v1_prefix)

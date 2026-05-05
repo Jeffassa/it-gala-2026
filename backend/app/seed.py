@@ -9,6 +9,7 @@ from app.core.security import hash_password
 from app.models.category import Category
 from app.models.gala import Gala
 from app.models.nominee import Nominee
+from app.models.souvenir import Souvenir
 from app.models.user import User, UserRole
 
 
@@ -135,6 +136,20 @@ def seed() -> None:
                         achievements=achievements_template,
                     ))
             db.commit()
+
+            # Seed souvenirs
+            if db.query(Souvenir).count() == 0:
+                souvenirs_seed = [
+                    ("Cérémonie d'ouverture", 0),
+                    ("Remise des trophées", 1),
+                    ("Performance live", 2),
+                    ("Photos officielles", 3),
+                    ("Soirée dansante", 4),
+                ]
+                for title, order in souvenirs_seed:
+                    db.add(Souvenir(gala_id=gala.id, title=title, order=order))
+                db.commit()
+
             print("[OK] Donnees de demonstration creees.")
         else:
             print("[--] Donnees deja presentes - seed ignore.")

@@ -1,6 +1,6 @@
 import {
   FileText, GraduationCap, LayoutDashboard, LogOut, Mail, Menu, MonitorPlay,
-  ScrollText, Sparkles, Ticket, TrendingUp, Trophy, Users as UsersIcon, X, Drama,
+  ScrollText, Sparkles, Ticket, TrendingUp, Trophy, Users as UsersIcon, X, Drama, Camera,
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -23,6 +23,7 @@ const NAV = [
   { to: "/admin/certificates", label: "Certificats", Icon: FileText },
   { to: "/admin/notifications", label: "Notifications", Icon: Mail },
   { to: "/admin/audit", label: "Journal des scans", Icon: ScrollText },
+  { to: "/admin/souvenirs", label: "Souvenirs", Icon: Camera },
   { to: "/live", label: "Grand écran", Icon: MonitorPlay },
 ];
 
@@ -38,6 +39,7 @@ const TITLES: Record<string, string> = {
   "/admin/certificates": "Certificats",
   "/admin/notifications": "Notifications",
   "/admin/audit": "Journal des scans",
+  "/admin/souvenirs": "Souvenirs",
 };
 
 export default function AdminLayout() {

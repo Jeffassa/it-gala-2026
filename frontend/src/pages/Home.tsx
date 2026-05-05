@@ -10,9 +10,9 @@ import {
   Trophy, Users, Video, Vote, Wallet, X,
 } from "@/components/Icon";
 import { Logo } from "@/components/Logo";
-import { categoryApi, galaApi } from "@/lib/api";
+import { categoryApi, galaApi, souvenirApi } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import type { Category, Gala } from "@/lib/types";
+import type { Category, Gala, Souvenir } from "@/lib/types";
 
 const CATEGORY_FALLBACK = [
   { name: "Meilleur Étudiant", description: "L'étudiant qui s'est démarqué cette année par son excellence académique et son engagement.", icon: "graduation-cap" },
@@ -60,6 +60,7 @@ const FAQ = [
 export default function HomePage() {
   const [gala, setGala] = useState<Gala | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [souvenirs, setSouvenirs] = useState<Souvenir[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -67,6 +68,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!gala) return;
     categoryApi.list(gala.id).then(setCategories).catch(() => setCategories([]));
+    souvenirApi.list(gala.id).then(setSouvenirs).catch(() => setSouvenirs([]));
   }, [gala]);
 
   const headerLinks = [
@@ -393,11 +395,43 @@ export default function HomePage() {
           </FadeIn>
 
           <FadeIn className="grid grid-cols-2 md:grid-cols-12 grid-rows-[160px] md:grid-rows-[200px] auto-rows-[180px] gap-3 mb-12">
-            <ArchiveTile className="col-span-2 row-span-2 md:col-span-6" gradient="from-primary/40 via-primary-deep/30 to-bg-elev" Icon={Crown} title="Cérémonie d'ouverture" />
-            <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-accent/30 to-bg-elev" Icon={Trophy} title="Remise des trophées" />
-            <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-terracotta/30 to-bg-elev" Icon={Music2} title="Performance live" />
-            <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-primary/30 to-bg-elev" Icon={Camera} title="Photos officielles" />
-            <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-accent/30 via-primary/20 to-bg-elev" Icon={Drama} title="Soirée dansante" />
+            {souvenirs.length > 0 ? (
+              souvenirs.slice(0, 5).map((s, i) => {
+                const configs = [
+                  "col-span-2 row-span-2 md:col-span-6",
+                  "col-span-1 md:col-span-3",
+                  "col-span-1 md:col-span-3",
+                  "col-span-1 md:col-span-3",
+                  "col-span-1 md:col-span-3",
+                ];
+                const gradients = [
+                  "from-primary/40 via-primary-deep/30 to-bg-elev",
+                  "from-accent/30 to-bg-elev",
+                  "from-terracotta/30 to-bg-elev",
+                  "from-primary/30 to-bg-elev",
+                  "from-accent/30 via-primary/20 to-bg-elev",
+                ];
+                const icons = [Crown, Trophy, Music2, Camera, Drama];
+                return (
+                  <ArchiveTile
+                    key={s.id}
+                    className={configs[i] || "col-span-1 md:col-span-3"}
+                    gradient={gradients[i % gradients.length]}
+                    Icon={icons[i % icons.length]}
+                    title={s.title}
+                    image={s.image_url}
+                  />
+                );
+              })
+            ) : (
+              <>
+                <ArchiveTile className="col-span-2 row-span-2 md:col-span-6" gradient="from-primary/40 via-primary-deep/30 to-bg-elev" Icon={Crown} title="Cérémonie d'ouverture" />
+                <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-accent/30 to-bg-elev" Icon={Trophy} title="Remise des trophées" />
+                <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-terracotta/30 to-bg-elev" Icon={Music2} title="Performance live" />
+                <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-primary/30 to-bg-elev" Icon={Camera} title="Photos officielles" />
+                <ArchiveTile className="col-span-1 md:col-span-3" gradient="from-accent/30 via-primary/20 to-bg-elev" Icon={Drama} title="Soirée dansante" />
+              </>
+            )}
           </FadeIn>
 
           <FadeIn className="flex gap-3 justify-center flex-wrap">
@@ -574,11 +608,21 @@ export default function HomePage() {
   );
 }
 
-function ArchiveTile({ className, gradient, Icon, title }: { className?: string; gradient: string; Icon: any; title: string }) {
+function ArchiveTile({ className, gradient, Icon, title, image }: { className?: string; gradient: string; Icon: any; title: string; image?: string | null }) {
+  const [error, setError] = useState(false);
   return (
     <figure className={`group relative rounded-2xl overflow-hidden border border-line cursor-pointer ${className}`}>
-      <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center transition group-hover:scale-105 duration-700`}>
-        <Icon size={56} className="text-white/30" strokeWidth={1.4} />
+      <div className={`w-full h-full flex items-center justify-center transition group-hover:scale-105 duration-700 ${image && !error ? "" : "bg-gradient-to-br " + gradient}`}>
+        {image && !error ? (
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover"
+            onError={() => setError(true)}
+          />
+        ) : (
+          <Icon size={56} className="text-white/30" strokeWidth={1.4} />
+        )}
       </div>
       <figcaption className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent flex items-end p-5 opacity-0 group-hover:opacity-100 transition">
         <span className="font-medium text-white text-sm">{title}</span>

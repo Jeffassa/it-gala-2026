@@ -15,6 +15,7 @@ export default defineConfig({
     allowedHosts: true, // accepte tous les hosts (utile pour ngrok / cloudflared)
     proxy: {
       "/api": "http://127.0.0.1:8000",
+      "/uploads": "http://127.0.0.1:8000",
     },
   },
 });

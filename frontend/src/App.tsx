@@ -18,6 +18,7 @@ import AdminReports from "@/pages/admin/Reports";
 import AdminCertificates from "@/pages/admin/Certificates";
 import AdminNotifications from "@/pages/admin/Notifications";
 import AdminAudit from "@/pages/admin/Audit";
+import AdminSouvenirs from "@/pages/admin/Souvenirs";
 import LivePage from "@/pages/Live";
 import CashierPage from "@/pages/cashier/Cashier";
 import ControllerPage from "@/pages/controller/Controller";
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="certificates" element={<AdminCertificates />} />
             <Route path="notifications" element={<AdminNotifications />} />
             <Route path="audit" element={<AdminAudit />} />
+            <Route path="souvenirs" element={<AdminSouvenirs />} />
           </Route>
         </Route>
 

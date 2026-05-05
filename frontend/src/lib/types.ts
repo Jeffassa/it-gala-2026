@@ -161,6 +161,15 @@ export interface Student {
   created_at: string;
 }
 
+export interface Souvenir {
+  id: number;
+  gala_id: number;
+  title: string;
+  image_url: string | null;
+  order: number;
+  created_at: string;
+}
+
 export interface StudentImportResult {
   created: number;
   updated: number;

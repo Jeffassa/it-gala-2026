@@ -1,12 +1,12 @@
 import {
-  Award, ArrowRight, ArrowUpRight, BarChart3, Calendar, Camera, Check,
+  Award, ArrowRight, ArrowUpRight, ArrowUp, ArrowDown, BarChart3, Calendar, Camera, Check,
   ChevronRight, Clock, Crown, Download, Drama, Edit, FileText, Film,
   Gem, GraduationCap, Heart, Image as ImageIcon, LayoutDashboard,
   LogOut, Lock, Mail, MapPin, Menu, MessageSquare, MonitorPlay, Music2,
   Plus, Power, Printer, RefreshCw, Rocket, ScrollText, Search, Send, Shield,
   Shirt, Smartphone, Smile, Sparkles, Star, Ticket, Trash2, TrendingUp,
   Trophy, User, Users, Video, X, Wallet, ListChecks, Eye, Vote,
-  Quote, type LucideIcon, type LucideProps,
+  Quote, MoveUp, MoveDown, Upload, type LucideIcon, type LucideProps,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -84,4 +84,5 @@ export {
   Plus, Power, Printer, RefreshCw, Rocket, ScrollText, Search, Send, Shield,
   Shirt, Smartphone, Smile, Sparkles, Star, Ticket, Trash2, TrendingUp,
   Trophy, User, Users, Video, X, Wallet, ListChecks, Eye, Vote, Quote,
+  ArrowUp, ArrowDown, MoveUp, MoveDown, Upload,
 };
