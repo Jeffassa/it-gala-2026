@@ -12,11 +12,13 @@ class DashboardStats(BaseModel):
     total_votes: int
     total_categories: int
     total_nominees: int
+    tickets_by_type: list["TicketTypeStat"] = []
 
 
 class TicketTypeStat(BaseModel):
     type: str
     count: int
+    scanned_count: int = 0
     revenue: float
 
 

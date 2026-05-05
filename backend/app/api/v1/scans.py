@@ -33,6 +33,10 @@ def scan_ticket(
             already_scanned=True,
         )
     
+    # Ensure defaults for old records
+    if ticket.scan_count is None: ticket.scan_count = 0
+    if ticket.max_scans is None: ticket.max_scans = 1
+
     ticket.scan_count += 1
     if ticket.scan_count >= ticket.max_scans:
         ticket.status = TicketStatus.SCANNED

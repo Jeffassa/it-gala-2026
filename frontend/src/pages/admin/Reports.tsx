@@ -68,13 +68,26 @@ export default function AdminReports() {
         <div className="table-wrap overflow-x-auto">
           <table>
             <thead>
-              <tr><th>Type</th><th className="text-right">Nombre</th><th className="text-right">Recettes</th></tr>
+              <tr>
+                <th>Type</th>
+                <th className="text-right">Vendus</th>
+                <th className="text-right">Scannés</th>
+                <th className="text-right">Recettes</th>
+              </tr>
             </thead>
             <tbody>
               {tickets_by_type.map((t) => (
                 <tr key={t.type}>
                   <td>{ticketTypeLabel(t.type)}</td>
                   <td className="text-right tabular-nums">{t.count}</td>
+                  <td className="text-right tabular-nums">
+                    <span className={t.scanned_count === t.count ? "text-emerald-400" : "text-accent"}>
+                      {t.scanned_count}
+                    </span>
+                    <span className="text-[10px] text-ink-muted ml-1.5">
+                      ({Math.round((t.scanned_count / (t.count || 1)) * 100)}%)
+                    </span>
+                  </td>
                   <td className="text-right tabular-nums font-semibold">{formatMoney(t.revenue)}</td>
                 </tr>
               ))}

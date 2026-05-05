@@ -50,6 +50,43 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      <section className="bg-bg-elev border border-line rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+          <h3 className="font-serif font-bold text-xl">Détails par type de ticket</h3>
+          <span className="text-xs text-ink-muted uppercase tracking-widest font-medium">Répartition</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-line">
+          {stats.tickets_by_type.map((t) => (
+            <div key={t.type} className="p-6">
+              <p className="text-xs font-bold uppercase tracking-widest text-accent mb-4">{t.type}</p>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-2xl font-bold">{t.count}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-ink-muted">Vendus</p>
+                </div>
+                <div className="pt-4 border-t border-line/50">
+                  <div className="flex justify-between items-end mb-1.5">
+                    <p className="text-lg font-bold">{t.scanned_count}</p>
+                    <p className="text-[10px] text-ink-muted">{Math.round((t.scanned_count / (t.count || 1)) * 100)}% scannés</p>
+                  </div>
+                  <div className="h-1.5 bg-bg rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-accent transition-all duration-1000" 
+                      style={{ width: `${(t.scanned_count / (t.count || 1)) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {stats.tickets_by_type.length === 0 && (
+            <div className="p-10 text-center text-ink-muted col-span-3 italic">
+              Aucune donnée de vente pour le moment.
+            </div>
+          )}
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickLink to="/admin/galas" Icon={Drama} title="Créer un gala" desc="Configurez date, lieu, thème" />
         <QuickLink to="/admin/categories" Icon={Trophy} title="Catégories" desc="Gérez les nominations" />

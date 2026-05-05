@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Response
-from sqlalchemy import func, select
+from sqlalchemy import func, select, case
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -20,6 +20,26 @@ router = APIRouter(prefix="/reports", tags=["reports"], dependencies=[Depends(re
 
 def _stats(db: Session) -> DashboardStats:
     active = db.scalar(select(Gala).where(Gala.is_active.is_(True)).order_by(Gala.edition_year.desc()))
+    
+    # Detailed stats by type
+    type_rows = db.execute(
+        select(
+            Ticket.type, 
+            func.count(Ticket.id),
+            func.coalesce(func.sum(case([(Ticket.status == TicketStatus.SCANNED, 1)], else_=0)), 0),
+            func.coalesce(func.sum(Ticket.price), 0)
+        ).group_by(Ticket.type)
+    ).all()
+    
+    by_type = [
+        TicketTypeStat(
+            type=str(r[0]), 
+            count=int(r[1]), 
+            scanned_count=int(r[2] or 0), 
+            revenue=float(r[3])
+        ) for r in type_rows
+    ]
+
     return DashboardStats(
         total_galas=int(db.scalar(select(func.count(Gala.id))) or 0),
         active_gala_id=active.id if active else None,
@@ -31,6 +51,7 @@ def _stats(db: Session) -> DashboardStats:
         total_votes=int(db.scalar(select(func.count(Vote.id))) or 0),
         total_categories=int(db.scalar(select(func.count(Category.id))) or 0),
         total_nominees=int(db.scalar(select(func.count(Nominee.id))) or 0),
+        tickets_by_type=by_type,
     )
 
 

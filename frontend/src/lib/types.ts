@@ -185,6 +185,7 @@ export interface DashboardStats {
   total_votes: number;
   total_categories: number;
   total_nominees: number;
+  tickets_by_type: { type: string; count: number; scanned_count: number; revenue: number }[];
 }
 
 export interface CategoryResult {
@@ -198,7 +199,7 @@ export interface CategoryResult {
 
 export interface FullReport {
   stats: DashboardStats;
-  tickets_by_type: { type: string; count: number; revenue: number }[];
+  tickets_by_type: { type: string; count: number; scanned_count: number; revenue: number }[];
   category_results: CategoryResult[];
 }
 
