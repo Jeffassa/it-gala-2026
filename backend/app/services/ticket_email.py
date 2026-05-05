@@ -35,7 +35,8 @@ def _format_date(d: datetime) -> str:
     return f"{d.day} {months[d.month - 1]} {d.year}"
 
 
-def build_ticket_email_html(ticket: Ticket, gala: Gala) -> str:
+def build_ticket_email_html(ticket: Ticket, gala: Gala, recipient_name: str | None = None) -> str:
+    name_to_use = recipient_name or ticket.buyer_full_name
     type_label = TYPE_LABEL.get(str(ticket.type), str(ticket.type))
     extra_rows = ""
     if ticket.partner_full_name:
@@ -58,7 +59,7 @@ def build_ticket_email_html(ticket: Ticket, gala: Gala) -> str:
         <tr><td style="padding:0 32px 24px 32px;">
           <p style="margin:18px 0 6px 0;font-size:11px;letter-spacing:0.25em;color:#F0A50C;text-transform:uppercase;">Votre billet d'entrée</p>
           <h1 style="margin:0 0 8px 0;font-family:Georgia,serif;font-size:30px;line-height:1.15;color:#FFFFFF;">Bienvenue à la nuit de la <span style="color:#FBC23A;font-style:italic;">tech ivoirienne</span></h1>
-          <p style="margin:0;color:#C9B8B8;font-size:14px;line-height:1.6;">Bonjour {ticket.buyer_full_name}, votre place pour le IT Gala {gala.edition_year} est confirmée. Présentez le QR code ci-dessous à l'entrée pour la validation.</p>
+          <p style="margin:0;color:#C9B8B8;font-size:14px;line-height:1.6;">Bonjour {name_to_use}, votre place pour le IT Gala {gala.edition_year} est confirmée. Présentez le QR code ci-dessous à l'entrée pour la validation.</p>
         </td></tr>
 
         <!-- Ticket card -->
@@ -103,7 +104,8 @@ def build_ticket_email_html(ticket: Ticket, gala: Gala) -> str:
 </body></html>"""
 
 
-def build_ticket_email_text(ticket: Ticket, gala: Gala) -> str:
+def build_ticket_email_text(ticket: Ticket, gala: Gala, recipient_name: str | None = None) -> str:
+    name_to_use = recipient_name or ticket.buyer_full_name
     type_label = TYPE_LABEL.get(str(ticket.type), str(ticket.type))
     extras = []
     if ticket.partner_full_name:
@@ -112,7 +114,7 @@ def build_ticket_email_text(ticket: Ticket, gala: Gala) -> str:
         extras.append(f"Groupe        : {ticket.group_size} personnes")
     extras_block = ("\n" + "\n".join(extras)) if extras else ""
     return (
-        f"Bonjour {ticket.buyer_full_name},\n\n"
+        f"Bonjour {name_to_use},\n\n"
         f"Votre billet pour le {gala.name} {gala.edition_year} est confirmé.\n"
         f"Presentez le code ci-dessous a l'entree pour la validation.\n\n"
         f"---------- VOTRE TICKET ----------\n"
@@ -129,15 +131,18 @@ def build_ticket_email_text(ticket: Ticket, gala: Gala) -> str:
     )
 
 
-def send_ticket_email(db: Session, ticket: Ticket, gala: Gala) -> None:
+def send_ticket_email(db: Session, ticket: Ticket, gala: Gala, recipient_name: str | None = None, recipient_email: str | None = None) -> None:
     """Send the ticket by email — silent on failure (logged in notifications table)."""
+    to_email = recipient_email or ticket.buyer_email
+    if not to_email:
+        return
     try:
         png = _qr_png(ticket.code)
-        html = build_ticket_email_html(ticket, gala)
-        text = build_ticket_email_text(ticket, gala)
+        html = build_ticket_email_html(ticket, gala, recipient_name)
+        text = build_ticket_email_text(ticket, gala, recipient_name)
         send_email(
             db,
-            to=ticket.buyer_email,
+            to=to_email,
             subject=f"Votre billet — {gala.name} {gala.edition_year}",
             body=text,
             html=html,

@@ -33,7 +33,7 @@ HEADER_MAP = {
     "courriel": "email",
     "promotion": "promotion",
     "promo": "promotion",
-    "classe": "promotion",
+    "classe": "classe",
     "filiere": "promotion",
     "telephone": "phone",
     "tel": "phone",
@@ -62,7 +62,9 @@ def _stringify(v) -> str:
     return str(v).strip()
 
 
-def import_students_from_xlsx(db: Session, content: bytes, default_promotion: str | None = None) -> dict:
+def import_students_from_xlsx(
+    db: Session, content: bytes, default_promotion: str | None = None, default_classe: str | None = None
+) -> dict:
     """Parse an .xlsx and upsert students. Returns a stats dict.
 
     The first non-empty row that contains at least one known header is used as header row.
@@ -99,7 +101,7 @@ def import_students_from_xlsx(db: Session, content: bytes, default_promotion: st
             continue
 
         for ri, row in enumerate(rows[header_idx + 1:], start=header_idx + 2):
-            data: dict[str, str] = {field: "" for field in {"matricule", "full_name", "email", "promotion", "phone"}}
+            data: dict[str, str] = {field: "" for field in {"matricule", "full_name", "email", "promotion", "classe", "phone"}}
             for ci, field in header_map.items():
                 if ci < len(row):
                     data[field] = _stringify(row[ci])
@@ -124,6 +126,7 @@ def import_students_from_xlsx(db: Session, content: bytes, default_promotion: st
                 continue
 
             promotion = data["promotion"] or default_promotion or ws.title
+            classe = data["classe"] or default_classe or None
             email = data["email"] or None
             phone = data["phone"] or None
 
@@ -132,6 +135,7 @@ def import_students_from_xlsx(db: Session, content: bytes, default_promotion: st
                 existing.full_name = data["full_name"]
                 existing.email = email
                 existing.promotion = promotion
+                existing.classe = classe
                 existing.phone = phone
                 updated += 1
             else:
@@ -140,6 +144,7 @@ def import_students_from_xlsx(db: Session, content: bytes, default_promotion: st
                     full_name=data["full_name"],
                     email=email,
                     promotion=promotion,
+                    classe=classe,
                     phone=phone,
                 ))
                 created += 1

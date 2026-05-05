@@ -27,6 +27,7 @@ const TICKET_TYPES: { type: TicketType; label: string; Icon: any; desc: string }
 export default function CashierPage() {
   const [gala, setGala] = useState<Gala | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [stats, setStats] = useState({ solo: 0, duo: 0, gbonhi: 0 });
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [selectedType, setSelectedType] = useState<TicketType | null>(null);
@@ -36,7 +37,14 @@ export default function CashierPage() {
 
   async function loadTickets() {
     setLoading(true);
-    try { setTickets(await ticketApi.list({ q: q || undefined, gala_id: gala?.id, limit: 50 })); }
+    try {
+      const [t, s] = await Promise.all([
+        ticketApi.list({ q: q || undefined, gala_id: gala?.id, limit: 50 }),
+        ticketApi.stats()
+      ]);
+      setTickets(t);
+      setStats(s);
+    }
     finally { setLoading(false); }
   }
   useEffect(() => { if (gala) loadTickets(); }, [gala]);
@@ -66,9 +74,9 @@ export default function CashierPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Stat label="Total Ventes" value={`${stats.solo + stats.duo + stats.gbonhi}`} hint={`Solo: ${stats.solo} | Duo: ${stats.duo} | Gbonhi: ${stats.gbonhi}`} />
           <Stat label="Aujourd'hui" value={`${todayStats.count}`} hint="tickets vendus" />
           <Stat label="Recettes du jour" value={formatMoney(todayStats.revenue)} accent />
-          <Stat label="Récents" value={`${tickets.length}`} hint="50 derniers" />
           <Stat label="Édition" value={gala ? `${gala.edition_year}` : "—"} hint={gala?.name} />
         </div>
 
@@ -187,31 +195,108 @@ function Stat({ label, value, hint, accent }: { label: string; value: string; hi
 }
 
 function SellModal({ type, gala, onClose, onSold }: { type: TicketType | null; gala: Gala | null; onClose: () => void; onSold: (t: Ticket) => void }) {
-  const [form, setForm] = useState({
-    buyer_full_name: "", buyer_email: "", buyer_phone: "",
-    partner_full_name: "", group_size: 5,
-    attendee_status: "regular" as AttendeeStatus,
-  });
+  const [attendeeStatus, setAttendeeStatus] = useState<AttendeeStatus>("regular");
   const [saving, setSaving] = useState(false);
+  
+  const numAttendees = type === "solo" ? 1 : type === "duo" ? 2 : type === "gbonhi" ? 5 : 0;
+  const [attendees, setAttendees] = useState<{ full_name: string; email: string; phone: string }[]>([]);
 
-  // Etat du picker etudiant
+  useEffect(() => {
+    if (type) {
+      setAttendeeStatus("regular");
+      setAttendees(Array.from({ length: numAttendees }, () => ({ full_name: "", email: "", phone: "" })));
+    }
+  }, [type, numAttendees]);
+
+  if (!type) return null;
+  const price = PRICE_TABLE[type];
+
+  function updateAttendee(index: number, data: { full_name: string; email: string; phone: string }) {
+    const newAttendees = [...attendees];
+    newAttendees[index] = data;
+    setAttendees(newAttendees);
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!gala) return;
+    setSaving(true);
+    try {
+      const ticket = await ticketApi.create({
+        gala_id: gala.id,
+        type: type as TicketType,
+        attendee_status: attendeeStatus,
+        price,
+        buyer_full_name: attendees[0].full_name,
+        buyer_email: attendees[0].email,
+        buyer_phone: attendees[0].phone || null,
+        attendees: attendees.map(a => ({ full_name: a.full_name, email: a.email || undefined, phone: a.phone || undefined })),
+      });
+      toast.success("Ticket émis");
+      onSold(ticket);
+    } catch (err) { toast.error(apiError(err)); }
+    finally { setSaving(false); }
+  }
+
+  const title = `Nouveau ticket ${type === "solo" ? "Solo" : type === "duo" ? "Duo" : "Gbonhi"}`;
+  const isValid = attendees.every(a => a.full_name.trim() !== "") && attendees[0]?.email?.trim() !== "";
+
+  return (
+    <Modal open={!!type} onClose={onClose} size="lg" title={title}>
+      <form onSubmit={submit} className="space-y-6">
+        
+        <div className="space-y-4">
+          {attendees.map((attendee, index) => (
+            <div key={index} className="p-4 border border-line rounded-xl bg-bg-elev/50">
+              <h4 className="font-semibold text-sm mb-3 text-accent flex items-center gap-2">
+                <UserIcon size={14} /> Participant {index + 1} {index === 0 ? "(Acheteur Principal)" : ""}
+              </h4>
+              <AttendeeForm 
+                data={attendee} 
+                onChange={(d) => updateAttendee(index, d)} 
+                requireEmail={index === 0} 
+              />
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <label className="label">Statut de l'acheteur</label>
+          <select className="input" value={attendeeStatus} onChange={(e) => setAttendeeStatus(e.target.value as AttendeeStatus)}>
+            <option value="regular">Régulier</option>
+            <option value="esoteric">Ésotérique (tarif spécial)</option>
+          </select>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-accent/10 to-transparent border border-accent-soft/30 rounded-xl">
+          <span className="text-sm text-ink-muted uppercase tracking-wider flex items-center gap-2">
+            <Wallet size={16} /> Total à encaisser
+          </span>
+          <span className="font-serif text-3xl font-bold accent-text">{formatMoney(price)}</span>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4 border-t border-line">
+          <button type="button" onClick={onClose} className="btn btn-secondary">Annuler</button>
+          <button type="submit" className="btn btn-primary" disabled={saving || !isValid}>
+            {saving ? <Spinner size={16} /> : <><Check size={16} /> Émettre le ticket</>}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function AttendeeForm({ data, onChange, requireEmail }: { 
+  data: { full_name: string; email: string; phone: string }; 
+  onChange: (d: { full_name: string; email: string; phone: string }) => void;
+  requireEmail?: boolean;
+}) {
   const [pickedStudent, setPickedStudent] = useState<Student | null>(null);
   const [studentQuery, setStudentQuery] = useState("");
   const [studentResults, setStudentResults] = useState<Student[]>([]);
   const [searching, setSearching] = useState(false);
   const [manualMode, setManualMode] = useState(false);
 
-  useEffect(() => {
-    if (type) {
-      setForm({ buyer_full_name: "", buyer_email: "", buyer_phone: "", partner_full_name: "", group_size: 5, attendee_status: "regular" });
-      setPickedStudent(null);
-      setStudentQuery("");
-      setStudentResults([]);
-      setManualMode(false);
-    }
-  }, [type]);
-
-  // Recherche etudiants debouncee
   useEffect(() => {
     if (manualMode || pickedStudent) return;
     if (!studentQuery.trim()) {
@@ -231,183 +316,89 @@ function SellModal({ type, gala, onClose, onSold }: { type: TicketType | null; g
 
   function selectStudent(s: Student) {
     setPickedStudent(s);
-    setForm({
-      ...form,
-      buyer_full_name: s.full_name,
-      buyer_email: s.email ?? "",
-      buyer_phone: s.phone ?? "",
+    onChange({
+      full_name: s.full_name,
+      email: s.email ?? "",
+      phone: s.phone ?? "",
     });
     setStudentResults([]);
     setStudentQuery("");
   }
 
-  function clearStudent() {
-    setPickedStudent(null);
-    setForm({ ...form, buyer_full_name: "", buyer_email: "", buyer_phone: "" });
-  }
-
-  function switchToManual() {
-    setManualMode(true);
-    setPickedStudent(null);
-    setStudentResults([]);
-  }
-
-  function switchToPicker() {
-    setManualMode(false);
-    setForm({ ...form, buyer_full_name: "", buyer_email: "", buyer_phone: "" });
-  }
-
-  if (!type) return null;
-  const price = PRICE_TABLE[type];
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!gala) return;
-    setSaving(true);
-    try {
-      const ticket = await ticketApi.create({
-        gala_id: gala.id,
-        type: type as TicketType,
-        attendee_status: form.attendee_status,
-        price,
-        buyer_full_name: form.buyer_full_name,
-        buyer_email: form.buyer_email,
-        buyer_phone: form.buyer_phone || null,
-        partner_full_name: type === "duo" ? form.partner_full_name : null,
-        group_size: type === "gbonhi" ? form.group_size : null,
-      });
-      toast.success("Ticket émis");
-      onSold(ticket);
-    } catch (err) { toast.error(apiError(err)); }
-    finally { setSaving(false); }
-  }
-
-  const title = `Nouveau ticket ${type === "solo" ? "Solo" : type === "duo" ? "Duo" : "Gbonhi"}`;
-
   return (
-    <Modal open={!!type} onClose={onClose} size="lg" title={title}>
-      <form onSubmit={submit} className="space-y-4">
-
-        {/* PICKER ETUDIANT */}
-        {!manualMode && !pickedStudent && (
-          <div className="bg-bg-elev2 border border-line rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs uppercase tracking-wider text-accent font-semibold inline-flex items-center gap-1.5">
-                <GraduationCap size={14} /> Sélectionner un étudiant ESATIC
-              </span>
-              <button type="button" onClick={switchToManual} className="text-xs text-ink-muted hover:text-accent inline-flex items-center gap-1">
-                <Edit3 size={12} /> Saisir manuellement
-              </button>
+    <div className="space-y-4">
+      {!manualMode && !pickedStudent && (
+        <div className="relative">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint" />
+          <input
+            className="input pl-10 text-sm"
+            placeholder="Rechercher étudiant (matricule, nom...)"
+            value={studentQuery}
+            onChange={(e) => setStudentQuery(e.target.value)}
+          />
+          {searching && <div className="absolute right-3.5 top-1/2 -translate-y-1/2"><Spinner size={14} /></div>}
+          
+          {studentResults.length > 0 && (
+            <div className="mt-1 absolute z-10 w-full max-h-48 overflow-y-auto bg-bg-elev2 border border-line rounded-lg shadow-xl divide-y divide-line">
+              {studentResults.map((s) => (
+                <button
+                  type="button"
+                  key={s.id}
+                  onClick={() => selectStudent(s)}
+                  className="w-full text-left px-3 py-2 hover:bg-bg-elev3 transition flex items-center gap-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{s.full_name}</p>
+                    <p className="text-xs text-ink-muted truncate">{s.matricule} {s.promotion ? `· ${s.promotion}` : ""}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-            <div className="relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint" />
-              <input
-                className="input pl-10"
-                placeholder="Rechercher par matricule, nom ou email..."
-                value={studentQuery}
-                onChange={(e) => setStudentQuery(e.target.value)}
-                autoFocus
-              />
-              {searching && <Spinner size={14} />}
-            </div>
-            {studentResults.length > 0 && (
-              <div className="mt-2 max-h-64 overflow-y-auto border border-line rounded-lg divide-y divide-line">
-                {studentResults.map((s) => (
-                  <button
-                    type="button"
-                    key={s.id}
-                    onClick={() => selectStudent(s)}
-                    className="w-full text-left p-3 hover:bg-bg-elev3 transition flex items-center gap-3"
-                  >
-                    <span className="icon-tile icon-tile-primary w-9 h-9 shrink-0">
-                      <UserIcon size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{s.full_name}</p>
-                      <p className="text-xs text-ink-muted truncate">
-                        <span className="font-mono">{s.matricule}</span>
-                        {s.promotion ? ` · ${s.promotion}` : ""}
-                        {s.email ? ` · ${s.email}` : ""}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {studentQuery && !searching && studentResults.length === 0 && (
-              <p className="text-xs text-ink-muted mt-2">
-                Aucun étudiant trouvé. <button type="button" onClick={switchToManual} className="text-accent hover:underline">Saisir manuellement</button>.
-              </p>
-            )}
-          </div>
-        )}
-
-        {pickedStudent && (
-          <div className="bg-accent/10 border border-accent-soft/40 rounded-xl p-4 flex items-center gap-3">
-            <span className="icon-tile icon-tile-accent w-10 h-10 shrink-0">
-              <UserIcon size={18} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold truncate">{pickedStudent.full_name}</p>
-              <p className="text-xs text-ink-muted truncate">
-                <span className="font-mono">{pickedStudent.matricule}</span>
-                {pickedStudent.promotion ? ` · ${pickedStudent.promotion}` : ""}
-              </p>
-            </div>
-            <button type="button" onClick={clearStudent} className="btn btn-ghost btn-sm">
-              <X size={14} /> Changer
-            </button>
-          </div>
-        )}
-
-        {manualMode && (
-          <div className="flex items-center justify-end">
-            <button type="button" onClick={switchToPicker} className="text-xs text-accent hover:underline inline-flex items-center gap-1">
-              <GraduationCap size={12} /> Sélectionner un étudiant pré-importé
-            </button>
-          </div>
-        )}
-
-        {/* CHAMPS DU FORMULAIRE */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="label">Nom complet de l'acheteur</label><input className="input" required value={form.buyer_full_name} onChange={(e) => setForm({ ...form, buyer_full_name: e.target.value })} readOnly={!!pickedStudent} /></div>
-          <div><label className="label">Email</label><input className="input" type="email" required value={form.buyer_email} onChange={(e) => setForm({ ...form, buyer_email: e.target.value })} /></div>
+          )}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="label">Téléphone (optionnel)</label><input className="input" value={form.buyer_phone} onChange={(e) => setForm({ ...form, buyer_phone: e.target.value })} /></div>
+      )}
+
+      {pickedStudent && (
+        <div className="bg-accent/10 border border-accent-soft/40 rounded-lg px-3 py-2 flex items-center justify-between">
           <div>
-            <label className="label">Statut de l'acheteur</label>
-            <select className="input" value={form.attendee_status} onChange={(e) => setForm({ ...form, attendee_status: e.target.value as AttendeeStatus })}>
-              <option value="regular">Régulier</option>
-              <option value="esoteric">Ésotérique (tarif spécial)</option>
-            </select>
+            <p className="font-semibold text-sm">{pickedStudent.full_name}</p>
+            <p className="text-xs text-ink-muted">{pickedStudent.matricule}</p>
           </div>
-        </div>
-
-        {type === "duo" && (
-          <div>
-            <label className="label">Nom du partenaire <span className="text-ink-faint normal-case tracking-normal">(optionnel)</span></label>
-            <input className="input" value={form.partner_full_name} onChange={(e) => setForm({ ...form, partner_full_name: e.target.value })} placeholder="Laissez vide si inconnu" />
-          </div>
-        )}
-        {type === "gbonhi" && (
-          <div><label className="label">Nombre de personnes dans le gbonhi</label><input className="input" type="number" min={2} max={20} value={form.group_size} onChange={(e) => setForm({ ...form, group_size: +e.target.value })} /></div>
-        )}
-
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-accent/10 to-transparent border border-accent-soft/30 rounded-xl">
-          <span className="text-sm text-ink-muted uppercase tracking-wider flex items-center gap-2">
-            <Wallet size={16} /> Total à encaisser
-          </span>
-          <span className="font-serif text-3xl font-bold accent-text">{formatMoney(price)}</span>
-        </div>
-
-        <div className="flex justify-end gap-2 pt-4 border-t border-line">
-          <button type="button" onClick={onClose} className="btn btn-secondary">Annuler</button>
-          <button type="submit" className="btn btn-primary" disabled={saving || (!form.buyer_full_name || !form.buyer_email)}>
-            {saving ? <Spinner size={16} /> : <><Check size={16} /> Émettre le ticket</>}
+          <button type="button" onClick={() => { setPickedStudent(null); onChange({ full_name: "", email: "", phone: "" }); }} className="btn btn-ghost btn-sm text-xs">
+            Changer
           </button>
         </div>
-      </form>
-    </Modal>
+      )}
+
+      <div className="flex items-center justify-end -mt-2">
+        {!manualMode && !pickedStudent && (
+          <button type="button" onClick={() => setManualMode(true)} className="text-xs text-ink-muted hover:text-accent">
+            Saisir manuellement
+          </button>
+        )}
+        {manualMode && (
+          <button type="button" onClick={() => { setManualMode(false); onChange({ full_name: "", email: "", phone: "" }); }} className="text-xs text-accent hover:underline">
+            Utiliser la recherche
+          </button>
+        )}
+      </div>
+
+      {(manualMode || pickedStudent) && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-ink-muted mb-1 block">Nom complet</label>
+            <input className="input text-sm py-1.5" required value={data.full_name} onChange={(e) => onChange({ ...data, full_name: e.target.value })} readOnly={!!pickedStudent} />
+          </div>
+          <div>
+            <label className="text-xs text-ink-muted mb-1 block">Email {requireEmail ? "*" : "(optionnel)"}</label>
+            <input className="input text-sm py-1.5" type="email" required={requireEmail} value={data.email} onChange={(e) => onChange({ ...data, email: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-xs text-ink-muted mb-1 block">Téléphone</label>
+            <input className="input text-sm py-1.5" value={data.phone} onChange={(e) => onChange({ ...data, phone: e.target.value })} />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

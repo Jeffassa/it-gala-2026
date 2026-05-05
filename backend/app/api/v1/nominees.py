@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import os
+import shutil
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -76,3 +78,37 @@ def delete_nominee(nominee_id: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=404, detail="Nominé introuvable")
     db.delete(n)
     db.commit()
+
+
+@router.post("/{nominee_id}/photo", response_model=NomineeOut, dependencies=[Depends(require_admin)])
+def upload_nominee_photo(
+    nominee_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> NomineeOut:
+    n = db.get(Nominee, nominee_id)
+    if n is None:
+        raise HTTPException(status_code=404, detail="Nominé introuvable")
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Fichier manquant")
+
+    ext = os.path.splitext(file.filename)[1]
+    if not ext:
+        ext = ".jpg"
+    filename = f"{n.id}{ext}"
+    filepath = os.path.join("uploads", "nominees", filename)
+
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    n.photo_url = f"/uploads/nominees/{filename}"
+    db.commit()
+    db.refresh(n)
+
+    votes = db.scalar(select(func.count(Vote.id)).where(Vote.nominee_id == n.id)) or 0
+    return NomineeOut(
+        id=n.id, category_id=n.category_id, name=n.name,
+        school_promotion=n.school_promotion, photo_url=n.photo_url,
+        description=n.description, votes_count=int(votes),
+    )

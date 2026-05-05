@@ -12,6 +12,7 @@ class StudentBase(BaseModel):
     full_name: str
     email: EmailStr | None = None
     promotion: str
+    classe: str | None = None
     phone: str | None = None
 
     @field_validator("matricule")
@@ -33,6 +34,7 @@ class StudentUpdate(BaseModel):
     full_name: str | None = None
     email: EmailStr | None = None
     promotion: str | None = None
+    classe: str | None = None
     phone: str | None = None
 
 

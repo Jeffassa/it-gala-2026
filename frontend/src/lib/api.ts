@@ -99,6 +99,11 @@ export const nomineeApi = {
   create: (data: Partial<Nominee>) => api.post<Nominee>("/nominees", data).then((r) => r.data),
   update: (id: number, data: Partial<Nominee>) =>
     api.patch<Nominee>(`/nominees/${id}`, data).then((r) => r.data),
+  uploadPhoto: (id: number, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return api.post<Nominee>(`/nominees/${id}/photo`, fd, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data);
+  },
   remove: (id: number) => api.delete(`/nominees/${id}`),
 };
 
@@ -114,10 +119,12 @@ export const ticketApi = {
     buyer_phone?: string | null;
     partner_full_name?: string | null;
     group_size?: number | null;
+    attendees?: { full_name: string; email?: string; phone?: string }[];
   }) => api.post<Ticket>("/tickets", data).then((r) => r.data),
   list: (params: { q?: string; gala_id?: number; status?: string; limit?: number } = {}) =>
     api.get<Ticket[]>("/tickets", { params }).then((r) => r.data),
   byCode: (code: string) => api.get<Ticket>(`/tickets/${code}`).then((r) => r.data),
+  stats: () => api.get<{ solo: number; duo: number; gbonhi: number }>("/tickets/stats").then((r) => r.data),
 };
 
 /* ============ Votes ============ */
@@ -131,7 +138,7 @@ export const voteApi = {
 export const scanApi = {
   scan: (code: string) => api.post<ScanResult>(`/scans/${code}`).then((r) => r.data),
   stats: () =>
-    api.get<{ total_tickets: number; scanned_tickets: number; remaining: number; my_scans: number }>("/scans/stats").then((r) => r.data),
+    api.get<{ total_tickets: number; scanned_tickets: number; remaining: number; my_scans: number; by_type: { solo: number; duo: number; gbonhi: number } }>("/scans/stats").then((r) => r.data),
   recent: (limit = 20) => api.get<Ticket[]>("/scans/recent", { params: { limit } }).then((r) => r.data),
 };
 
@@ -167,23 +174,24 @@ export const auditApi = {
 
 /* ============ Students ============ */
 export const studentApi = {
-  list: (params: { q?: string; promotion?: string; limit?: number } = {}) =>
+  list: (params: { q?: string; promotion?: string; classe?: string; limit?: number } = {}) =>
     api.get<Student[]>("/students", { params }).then((r) => r.data),
   promotions: () => api.get<string[]>("/students/promotions").then((r) => r.data),
+  classes: () => api.get<string[]>("/students/classes").then((r) => r.data),
   create: (data: Omit<Student, "id" | "created_at">) =>
     api.post<Student>("/students", data).then((r) => r.data),
   update: (id: number, data: Partial<Student>) =>
     api.patch<Student>(`/students/${id}`, data).then((r) => r.data),
   remove: (id: number) => api.delete(`/students/${id}`),
-  removeAll: (promotion?: string) =>
-    api.delete("/students", { params: { promotion } }),
-  importXlsx: (file: File, promotion?: string) => {
+  removeAll: (promotion?: string, classe?: string) =>
+    api.delete("/students", { params: { promotion, classe } }),
+  importXlsx: (file: File, promotion?: string, classe?: string) => {
     const fd = new FormData();
     fd.append("file", file);
     return api
       .post<StudentImportResult>("/students/import", fd, {
-        params: { promotion },
         headers: { "Content-Type": "multipart/form-data" },
+        params: { promotion, classe },
       })
       .then((r) => r.data);
   },

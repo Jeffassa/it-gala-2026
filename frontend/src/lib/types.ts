@@ -38,6 +38,12 @@ export type TicketType = "solo" | "duo" | "gbonhi";
 export type AttendeeStatus = "esoteric" | "regular";
 export type TicketStatus = "sold" | "scanned" | "cancelled";
 
+export interface Attendee {
+  full_name: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface Ticket {
   id: number;
   code: string;
@@ -54,6 +60,9 @@ export interface Ticket {
   sold_by_id: number | null;
   sold_at: string;
   scanned_at: string | null;
+  max_scans: number;
+  scan_count: number;
+  attendees: Attendee[];
 }
 
 export interface ScanResult {
@@ -147,6 +156,7 @@ export interface Student {
   full_name: string;
   email: string | null;
   promotion: string;
+  classe: string | null;
   phone: string | null;
   created_at: string;
 }

@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -41,6 +41,9 @@ class Ticket(Base):
     partner_full_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     group_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
+    max_scans: Mapped[int] = mapped_column(Integer, default=1)
+    scan_count: Mapped[int] = mapped_column(Integer, default=0)
+    attendees: Mapped[list[dict] | None] = mapped_column(JSON, nullable=True)
     sold_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     sold_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     scanned_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

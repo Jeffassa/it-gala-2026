@@ -12,13 +12,16 @@ import type { Student, StudentImportResult } from "@/lib/types";
 import { toast } from "@/store/toast";
 
 const MATRICULE_RE = /^\d{2}-ESATIC\d{4}[A-Z]{2}$/;
+const IT_PROMOTIONS = Array.from({ length: 14 }, (_, i) => `IT${i + 1}`);
 
 export default function AdminStudents() {
   const [students, setStudents] = useState<Student[]>([]);
   const [promotions, setPromotions] = useState<string[]>([]);
+  const [classes, setClasses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [promo, setPromo] = useState<string>("");
+  const [cls, setCls] = useState<string>("");
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<StudentImportResult | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -29,12 +32,14 @@ export default function AdminStudents() {
   async function load() {
     setLoading(true);
     try {
-      const [list, promos] = await Promise.all([
-        studentApi.list({ q: q || undefined, promotion: promo || undefined, limit: 1000 }),
+      const [list, promos, clss] = await Promise.all([
+        studentApi.list({ q: q || undefined, promotion: promo || undefined, classe: cls || undefined, limit: 1000 }),
         studentApi.promotions(),
+        studentApi.classes(),
       ]);
       setStudents(list);
       setPromotions(promos);
+      setClasses(clss);
     } finally {
       setLoading(false);
     }
@@ -43,13 +48,13 @@ export default function AdminStudents() {
   useEffect(() => {
     const t = setTimeout(load, 300);
     return () => clearTimeout(t);
-  }, [q, promo]);
+  }, [q, promo, cls]);
 
-  async function onImportFile(file: File, defaultPromo?: string) {
+  async function onImportFile(file: File, defaultPromo?: string, defaultClasse?: string) {
     setImporting(true);
     setImportResult(null);
     try {
-      const result = await studentApi.importXlsx(file, defaultPromo);
+      const result = await studentApi.importXlsx(file, defaultPromo, defaultClasse);
       setImportResult(result);
       const ok = result.created + result.updated;
       toast.success(`${ok} étudiant(s) intégrés (${result.created} nouveaux, ${result.updated} mis à jour)`);
@@ -75,12 +80,13 @@ export default function AdminStudents() {
   }
 
   async function deleteAll() {
-    const target = promo ? `la promotion « ${promo} »` : "TOUS les étudiants";
+    const target = promo || cls ? `la sélection` : "TOUS les étudiants";
     if (!confirm(`Supprimer ${target} ? Cette action est irréversible.`)) return;
     try {
-      await studentApi.removeAll(promo || undefined);
+      await studentApi.removeAll(promo || undefined, cls || undefined);
       toast.success("Suppression effectuée");
       setPromo("");
+      setCls("");
       load();
     } catch (err) { toast.error(apiError(err)); }
   }
@@ -106,9 +112,10 @@ export default function AdminStudents() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Stat label="Étudiants" value={students.length.toString()} />
         <Stat label="Promotions" value={promotions.length.toString()} />
+        <Stat label="Classes" value={classes.length.toString()} />
         <Stat label="Avec email" value={students.filter((s) => s.email).length.toString()} />
         <Stat label="Avec téléphone" value={students.filter((s) => s.phone).length.toString()} />
       </div>
@@ -124,18 +131,22 @@ export default function AdminStudents() {
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
-        <select className="input max-w-xs" value={promo} onChange={(e) => setPromo(e.target.value)}>
-          <option value="">Toutes les promotions</option>
+        <select className="input max-w-[140px]" value={promo} onChange={(e) => setPromo(e.target.value)}>
+          <option value="">Promotions</option>
           {promotions.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
-        {(q || promo) && (
-          <button onClick={() => { setQ(""); setPromo(""); }} className="btn btn-ghost btn-sm">
+        <select className="input max-w-[140px]" value={cls} onChange={(e) => setCls(e.target.value)}>
+          <option value="">Classes</option>
+          {classes.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {(q || promo || cls) && (
+          <button onClick={() => { setQ(""); setPromo(""); setCls(""); }} className="btn btn-ghost btn-sm">
             <X size={14} /> Effacer filtres
           </button>
         )}
         <div className="ml-auto">
           <button onClick={deleteAll} className="btn btn-sm border border-red-500/30 text-red-400 hover:bg-red-500/10">
-            <Trash2 size={14} /> {promo ? `Vider la promo` : "Tout supprimer"}
+            <Trash2 size={14} /> {(promo || cls) ? `Vider sélection` : "Tout supprimer"}
           </button>
         </div>
       </div>
@@ -160,6 +171,7 @@ export default function AdminStudents() {
                 <th>Matricule</th>
                 <th>Nom complet</th>
                 <th>Promotion</th>
+                <th>Classe</th>
                 <th>Email</th>
                 <th>Téléphone</th>
                 <th></th>
@@ -171,6 +183,7 @@ export default function AdminStudents() {
                   <td className="font-mono text-xs">{s.matricule}</td>
                   <td className="font-medium">{s.full_name}</td>
                   <td><span className="badge">{s.promotion}</span></td>
+                  <td>{s.classe ? <span className="badge badge-accent">{s.classe}</span> : "—"}</td>
                   <td className="text-ink-muted">{s.email ?? "—"}</td>
                   <td className="text-ink-muted">{s.phone ?? "—"}</td>
                   <td>
@@ -195,7 +208,7 @@ export default function AdminStudents() {
         onClose={() => { setShowImportModal(false); setImportResult(null); }}
         importing={importing}
         result={importResult}
-        onImport={async (file, defaultPromo) => { await onImportFile(file, defaultPromo); }}
+        onImport={async (file, defaultPromo, defaultClasse) => { await onImportFile(file, defaultPromo, defaultClasse); }}
       />
 
       <StudentForm
@@ -224,9 +237,10 @@ function ImportModal({
   onClose: () => void;
   importing: boolean;
   result: StudentImportResult | null;
-  onImport: (file: File, defaultPromo?: string) => Promise<void>;
+  onImport: (file: File, defaultPromo?: string, defaultClasse?: string) => Promise<void>;
 }) {
   const [defaultPromo, setDefaultPromo] = useState("");
+  const [defaultClasse, setDefaultClasse] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -235,7 +249,7 @@ function ImportModal({
       toast.error("Format non supporté — uploadez un .xlsx");
       return;
     }
-    await onImport(file, defaultPromo || undefined);
+    await onImport(file, defaultPromo || undefined, defaultClasse || undefined);
   }
 
   return (
@@ -248,7 +262,8 @@ function ImportModal({
             <ul className="text-xs space-y-1.5 text-ink-muted">
               <li>• <code className="text-accent font-mono">matricule</code> <span className="text-ink-faint">— ex : 22-ESATIC0273DN</span> (obligatoire)</li>
               <li>• <code className="text-accent font-mono">nom</code> ou <code className="text-accent font-mono">nom complet</code> (obligatoire)</li>
-              <li>• <code className="text-accent font-mono">promotion</code> ou <code className="text-accent font-mono">classe</code></li>
+              <li>• <code className="text-accent font-mono">promotion</code> <span className="text-ink-faint">— ex: 2026</span></li>
+              <li>• <code className="text-accent font-mono">classe</code> <span className="text-ink-faint">— ex: GLSI A</span></li>
               <li>• <code className="text-accent font-mono">email</code> (optionnel)</li>
               <li>• <code className="text-accent font-mono">telephone</code> (optionnel)</li>
             </ul>
@@ -257,14 +272,27 @@ function ImportModal({
             </p>
           </div>
 
-          <div>
-            <label className="label">Promotion par défaut <span className="text-ink-faint normal-case tracking-normal">(optionnel)</span></label>
-            <input
-              className="input"
-              placeholder="L3 GLSI 2026"
-              value={defaultPromo}
-              onChange={(e) => setDefaultPromo(e.target.value)}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Promotion par défaut <span className="text-ink-faint normal-case tracking-normal">(optionnel)</span></label>
+              <select
+                className="input"
+                value={defaultPromo}
+                onChange={(e) => setDefaultPromo(e.target.value)}
+              >
+                <option value="">Sélectionner...</option>
+                {IT_PROMOTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">Classe par défaut <span className="text-ink-faint normal-case tracking-normal">(optionnel)</span></label>
+              <input
+                className="input"
+                placeholder="L3 GLSI"
+                value={defaultClasse}
+                onChange={(e) => setDefaultClasse(e.target.value)}
+              />
+            </div>
           </div>
 
           <div
@@ -359,7 +387,7 @@ function StudentForm({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState({ matricule: "", full_name: "", promotion: "", email: "", phone: "" });
+  const [form, setForm] = useState({ matricule: "", full_name: "", promotion: "", classe: "", email: "", phone: "" });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -367,10 +395,11 @@ function StudentForm({
       matricule: initial.matricule,
       full_name: initial.full_name,
       promotion: initial.promotion,
+      classe: initial.classe ?? "",
       email: initial.email ?? "",
       phone: initial.phone ?? "",
     });
-    else setForm({ matricule: "", full_name: "", promotion: "", email: "", phone: "" });
+    else setForm({ matricule: "", full_name: "", promotion: "", classe: "", email: "", phone: "" });
   }, [initial, open]);
 
   async function submit(e: React.FormEvent) {
@@ -385,6 +414,7 @@ function StudentForm({
         matricule: form.matricule.trim().toUpperCase(),
         full_name: form.full_name,
         promotion: form.promotion,
+        classe: form.classe || null,
         email: form.email || null,
         phone: form.phone || null,
       };
@@ -416,9 +446,18 @@ function StudentForm({
             />
             <p className="text-xs text-ink-faint mt-1.5">Format : AA-ESATIC#### + 2 lettres</p>
           </div>
-          <div>
-            <label className="label">Promotion</label>
-            <input className="input" required value={form.promotion} onChange={(e) => setForm({ ...form, promotion: e.target.value })} placeholder="L3 GLSI 2026" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Promotion</label>
+              <select className="input" required value={form.promotion} onChange={(e) => setForm({ ...form, promotion: e.target.value })}>
+                <option value="">Sélectionner...</option>
+                {IT_PROMOTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">Classe</label>
+              <input className="input" value={form.classe} onChange={(e) => setForm({ ...form, classe: e.target.value })} placeholder="L3 GLSI" />
+            </div>
           </div>
         </div>
         <div>

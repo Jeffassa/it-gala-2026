@@ -8,6 +8,8 @@ import { apiError, categoryApi, galaApi, nomineeApi } from "@/lib/api";
 import type { Category, Gala, Nominee } from "@/lib/types";
 import { toast } from "@/store/toast";
 
+const IT_PROMOTIONS = Array.from({ length: 14 }, (_, i) => `IT${i + 1}`);
+
 export default function AdminNominees() {
   const [galas, setGalas] = useState<Gala[]>([]);
   const [galaId, setGalaId] = useState<number | null>(null);
@@ -111,6 +113,7 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
     name: "", school_promotion: "", photo_url: "", description: "",
     biography: "", achievements: "", contact_email: "",
   });
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -124,14 +127,24 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
       contact_email: initial.contact_email ?? "",
     });
     else setForm({ name: "", school_promotion: "", photo_url: "", description: "", biography: "", achievements: "", contact_email: "" });
+    setPhotoFile(null);
   }, [initial, open]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
-      if (initial) await nomineeApi.update(initial.id, form);
-      else await nomineeApi.create({ ...form, category_id: categoryId });
+      let nominee: Nominee;
+      if (initial) {
+        nominee = await nomineeApi.update(initial.id, form);
+      } else {
+        nominee = await nomineeApi.create({ ...form, category_id: categoryId });
+      }
+
+      if (photoFile) {
+        await nomineeApi.uploadPhoto(nominee.id, photoFile);
+      }
+
       toast.success(initial ? "Nominé mis à jour" : "Nominé ajouté");
       onSaved();
     } catch (err) { toast.error(apiError(err)); }
@@ -143,11 +156,20 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
       <form onSubmit={submit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div><label className="label">Nom complet</label><input className="input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div><label className="label">Promotion / École</label><input className="input" value={form.school_promotion} onChange={(e) => setForm({ ...form, school_promotion: e.target.value })} placeholder="L3 GLSI 2026" /></div>
+          <div>
+            <label className="label">Promotion / École <span className="text-ink-faint normal-case tracking-normal">(optionnel)</span></label>
+            <select className="input" value={form.school_promotion} onChange={(e) => setForm({ ...form, school_promotion: e.target.value })}>
+              <option value="">Sélectionner...</option>
+              {IT_PROMOTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="label">URL photo</label><input className="input" value={form.photo_url} onChange={(e) => setForm({ ...form, photo_url: e.target.value })} placeholder="https://…" /></div>
-          <div><label className="label">Email de contact</label><input className="input" type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} /></div>
+          <div><label className="label">Photo (Upload)</label><input type="file" accept="image/*" className="input py-1.5" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} /></div>
+          <div><label className="label">ou URL directe</label><input className="input" value={form.photo_url} onChange={(e) => setForm({ ...form, photo_url: e.target.value })} placeholder="https://…" disabled={!!photoFile} /></div>
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div><label className="label">Email de contact</label><input className="input max-w-sm" type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} /></div>
         </div>
         <div><label className="label">Tagline / Description courte</label><input className="input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Une phrase qui résume le profil" /></div>
         <div><label className="label">Biographie</label><textarea className="input min-h-[120px]" value={form.biography} onChange={(e) => setForm({ ...form, biography: e.target.value })} placeholder="Parcours, valeurs, vision…" /></div>

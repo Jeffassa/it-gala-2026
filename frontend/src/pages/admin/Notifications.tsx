@@ -57,7 +57,7 @@ export default function AdminNotifications() {
           </button>
         </div>
         <p className="text-xs text-ink-muted">
-          Les emails sont envoyés via le service email configuré (Resend en production).
+
         </p>
       </form>
     </div>

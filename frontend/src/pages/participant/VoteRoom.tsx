@@ -82,10 +82,15 @@ export default function VoteRoomPage() {
           </Link>
         </div>
 
-        {gala && !gala.voting_open && (
+        {gala && (!gala.voting_open || !gala.live_results_visible) && (
           <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-sm flex items-center gap-3">
             <ShieldAlert size={18} className="shrink-0" />
-            <span>Les votes sont actuellement fermés. Vous pouvez consulter les nominés mais pas voter.</span>
+            <span>
+              {!gala.voting_open 
+                ? "Les votes sont actuellement fermés." 
+                : "Les votes sont temporairement suspendus."} 
+              Vous pouvez consulter les nominés mais pas voter.
+            </span>
           </div>
         )}
 
@@ -128,7 +133,7 @@ export default function VoteRoomPage() {
             category={active}
             nominees={nominees}
             myNomineeId={myVoteByCat.get(active.id) ?? null}
-            votingOpen={gala?.voting_open ?? true}
+            votingOpen={(gala?.voting_open ?? true) && (gala?.live_results_visible ?? true)}
             onBack={() => setActive(null)}
             onVote={castVote}
           />

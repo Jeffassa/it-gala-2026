@@ -16,6 +16,7 @@ def list_students(
     db: Session = Depends(get_db),
     q: str | None = Query(None),
     promotion: str | None = Query(None),
+    classe: str | None = Query(None),
     limit: int = Query(500, le=2000),
 ) -> list[StudentOut]:
     stmt = select(Student).order_by(Student.full_name).limit(limit)
@@ -28,12 +29,19 @@ def list_students(
         ))
     if promotion:
         stmt = stmt.where(Student.promotion == promotion)
+    if classe:
+        stmt = stmt.where(Student.classe == classe)
     return [StudentOut.model_validate(s) for s in db.scalars(stmt).all()]
 
 
 @router.get("/promotions", response_model=list[str])
 def list_promotions(db: Session = Depends(get_db)) -> list[str]:
     rows = db.execute(select(Student.promotion).distinct().order_by(Student.promotion)).all()
+    return [r[0] for r in rows if r[0]]
+
+@router.get("/classes", response_model=list[str])
+def list_classes(db: Session = Depends(get_db)) -> list[str]:
+    rows = db.execute(select(Student.classe).distinct().where(Student.classe.is_not(None)).order_by(Student.classe)).all()
     return [r[0] for r in rows if r[0]]
 
 
@@ -70,11 +78,13 @@ def delete_student(student_id: int, db: Session = Depends(get_db)) -> None:
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
-def delete_all(db: Session = Depends(get_db), promotion: str | None = Query(None)) -> None:
-    """Bulk delete — optionally filtered by promotion."""
+def delete_all(db: Session = Depends(get_db), promotion: str | None = Query(None), classe: str | None = Query(None)) -> None:
+    """Bulk delete — optionally filtered by promotion and classe."""
     stmt = select(Student)
     if promotion:
         stmt = stmt.where(Student.promotion == promotion)
+    if classe:
+        stmt = stmt.where(Student.classe == classe)
     for s in db.scalars(stmt).all():
         db.delete(s)
     db.commit()
@@ -84,6 +94,7 @@ def delete_all(db: Session = Depends(get_db), promotion: str | None = Query(None
 async def import_students(
     file: UploadFile = File(...),
     promotion: str | None = Query(None, description="Promotion par défaut si la colonne est absente du fichier"),
+    classe: str | None = Query(None, description="Classe par défaut si la colonne est absente du fichier"),
     db: Session = Depends(get_db),
 ) -> StudentImportResult:
     if not file.filename.lower().endswith((".xlsx", ".xlsm")):
@@ -92,7 +103,7 @@ async def import_students(
     if len(content) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Fichier trop volumineux (>10 Mo)")
     try:
-        result = import_students_from_xlsx(db, content, default_promotion=promotion)
+        result = import_students_from_xlsx(db, content, default_promotion=promotion, default_classe=classe)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=f"Erreur de lecture : {exc}")
     return StudentImportResult(**result)

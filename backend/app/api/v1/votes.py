@@ -25,8 +25,8 @@ def cast_vote(
         raise HTTPException(status_code=404, detail="Nominé introuvable")
 
     active_gala = db.scalar(select(Gala).where(Gala.is_active.is_(True)))
-    if active_gala is not None and not active_gala.voting_open:
-        raise HTTPException(status_code=403, detail="Les votes sont fermés")
+    if active_gala is not None and (not active_gala.voting_open or not active_gala.live_results_visible):
+        raise HTTPException(status_code=403, detail="Les votes sont fermés ou masqués (Live inactif)")
 
     existing = db.scalar(
         select(Vote).where(Vote.user_id == current.id, Vote.category_id == nominee.category_id)

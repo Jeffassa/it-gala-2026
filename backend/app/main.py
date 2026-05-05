@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
 from app.api.v1 import (
@@ -16,14 +17,21 @@ from app.models import *  # noqa: F401,F403
 def _ensure_columns() -> None:
     """Idempotent ALTER TABLE for new columns added after initial deploy."""
     insp = inspect(engine)
-    if "galas" not in insp.get_table_names():
-        return
-    cols = {c["name"] for c in insp.get_columns("galas")}
-    if "live_results_visible" not in cols:
-        with engine.begin() as conn:
-            conn.execute(text(
-                "ALTER TABLE galas ADD COLUMN live_results_visible BOOLEAN DEFAULT FALSE"
-            ))
+    if "galas" in insp.get_table_names():
+        cols = {c["name"] for c in insp.get_columns("galas")}
+        if "live_results_visible" not in cols:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE galas ADD COLUMN live_results_visible BOOLEAN DEFAULT FALSE"
+                ))
+
+    if "students" in insp.get_table_names():
+        student_cols = {c["name"] for c in insp.get_columns("students")}
+        if "classe" not in student_cols:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE students ADD COLUMN classe VARCHAR(80) DEFAULT NULL"
+                ))
 
 
 @asynccontextmanager
@@ -47,6 +55,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+import os
+os.makedirs("uploads/nominees", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health", tags=["health"])

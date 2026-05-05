@@ -26,7 +26,7 @@ function beep(freq = 880, ms = 120) {
 
 export default function ControllerPage() {
   const [gala, setGala] = useState<Gala | null>(null);
-  const [stats, setStats] = useState({ total_tickets: 0, scanned_tickets: 0, remaining: 0, my_scans: 0 });
+  const [stats, setStats] = useState({ total_tickets: 0, scanned_tickets: 0, remaining: 0, my_scans: 0, by_type: { solo: 0, duo: 0, gbonhi: 0 } });
   const [recent, setRecent] = useState<Ticket[]>([]);
   const [scanning, setScanning] = useState(false);
   const [lastResult, setLastResult] = useState<ScanResult | null>(null);
@@ -134,7 +134,7 @@ export default function ControllerPage() {
           <Stat label="Tickets scannés" value={stats.scanned_tickets} accent />
           <Stat label="Restants" value={stats.remaining} />
           <Stat label="Mes scans" value={stats.my_scans} hint="cette session" />
-          <Stat label="Total émis" value={stats.total_tickets} />
+          <Stat label="Total émis" value={stats.total_tickets} hint={`Solo: ${stats.by_type.solo} | Duo: ${stats.by_type.duo} | Gbonhi: ${stats.by_type.gbonhi}`} />
         </div>
 
         <section className="bg-bg-elev border border-line rounded-2xl p-6">
@@ -259,7 +259,8 @@ function ResultModal({ result, onClose }: { result: ScanResult | null; onClose: 
             <Row k="Acheteur" v={result.ticket.buyer_full_name} />
             <Row k="Type" v={ticketTypeLabel(result.ticket.type)} />
             <Row k="Code" v={result.ticket.code} mono />
-            {result.ticket.scanned_at && <Row k="Scanné le" v={formatDateTime(result.ticket.scanned_at)} />}
+            <Row k="Entrées" v={`${result.ticket.scan_count} / ${result.ticket.max_scans}`} />
+            {result.ticket.scanned_at && <Row k="Dernier scan" v={formatDateTime(result.ticket.scanned_at)} />}
           </div>
         )}
         <button onClick={onClose} className="btn btn-primary btn-lg mt-6 w-full">Continuer</button>
