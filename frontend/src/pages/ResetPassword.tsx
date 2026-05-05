@@ -111,7 +111,7 @@ export default function ResetPasswordPage() {
                 <div>
                   <label className="label">Nouveau mot de passe</label>
                   <div className="relative group">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint z-10 pointer-events-none">
                       <Lock size={18} strokeWidth={1.8} />
                     </span>
                     <input
@@ -137,7 +137,7 @@ export default function ResetPasswordPage() {
                 <div>
                   <label className="label">Confirmer le mot de passe</label>
                   <div className="relative group">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint z-10 pointer-events-none">
                       <Lock size={18} strokeWidth={1.8} />
                     </span>
                     <input

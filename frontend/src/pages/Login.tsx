@@ -204,7 +204,7 @@ function Field({ label, Icon, children }: { label: string; Icon: any; children: 
     <div>
       <label className="label">{label}</label>
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint z-10 pointer-events-none">
           <Icon size={18} strokeWidth={1.8} />
         </span>
         {children}
