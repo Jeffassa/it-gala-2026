@@ -1,4 +1,4 @@
-import { Check, Edit, Plus, Search, Trash2, Users as UsersIcon } from "lucide-react";
+import { Check, Edit, Eye, EyeOff, Plus, Search, Trash2, Users as UsersIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Avatar } from "@/components/Avatar";
@@ -129,6 +129,7 @@ export default function AdminUsers() {
 function UserForm({ open, onClose, initial, onSaved }: { open: boolean; onClose: () => void; initial: UserWithSpend | null; onSaved: () => void }) {
   const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "participant" as Role, school_promotion: "" });
   const [saving, setSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (initial) setForm({ full_name: initial.full_name, email: initial.email, password: "", role: initial.role, school_promotion: initial.school_promotion ?? "" });
@@ -159,7 +160,23 @@ function UserForm({ open, onClose, initial, onSaved }: { open: boolean; onClose:
         <div><label className="label">Email</label><input className="input" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
         <div>
           <label className="label">{initial ? "Nouveau mot de passe (laisser vide pour conserver)" : "Mot de passe"}</label>
-          <input className="input" type="password" required={!initial} minLength={initial ? 0 : 6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          <div className="relative group">
+            <input 
+              className="input pr-11" 
+              type={showPassword ? "text" : "password"} 
+              required={!initial} 
+              minLength={initial ? 0 : 6} 
+              value={form.password} 
+              onChange={(e) => setForm({ ...form, password: e.target.value })} 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-ink-faint hover:text-accent transition-colors"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

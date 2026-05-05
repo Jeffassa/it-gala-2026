@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowRight, Lock, LogIn, Mail, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, LogIn, Mail, User } from "lucide-react";
 
 import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const setSession = useAuthStore((s) => s.setSession);
   const nav = useNavigate();
   const [params] = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
 
   function redirectByRole(role: string) {
     const next = params.get("next");
@@ -145,16 +146,26 @@ export default function LoginPage() {
               />
             </Field>
             <Field label="Mot de passe" Icon={Lock}>
-              <input
-                className="input pl-11"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
-              />
+              <div className="relative group">
+                <input
+                  className="input pl-11 pr-11"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-ink-faint hover:text-accent transition-colors"
+                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </Field>
 
             {mode === "login" && (

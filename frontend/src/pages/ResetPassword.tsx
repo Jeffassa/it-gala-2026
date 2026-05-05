@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowLeft, ArrowRight, Check, Lock, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 
 import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
@@ -18,6 +18,8 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,13 +110,13 @@ export default function ResetPasswordPage() {
               <form onSubmit={onSubmit} className="space-y-4">
                 <div>
                   <label className="label">Nouveau mot de passe</label>
-                  <div className="relative">
+                  <div className="relative group">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint">
                       <Lock size={18} strokeWidth={1.8} />
                     </span>
                     <input
-                      className="input pl-11"
-                      type="password"
+                      className="input pl-11 pr-11"
+                      type={showPassword ? "text" : "password"}
                       required
                       minLength={8}
                       value={password}
@@ -123,17 +125,24 @@ export default function ResetPasswordPage() {
                       autoComplete="new-password"
                       autoFocus
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-ink-faint hover:text-accent transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
                 <div>
                   <label className="label">Confirmer le mot de passe</label>
-                  <div className="relative">
+                  <div className="relative group">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint">
                       <Lock size={18} strokeWidth={1.8} />
                     </span>
                     <input
-                      className="input pl-11"
-                      type="password"
+                      className="input pl-11 pr-11"
+                      type={showConfirm ? "text" : "password"}
                       required
                       minLength={8}
                       value={confirm}
@@ -141,6 +150,13 @@ export default function ResetPasswordPage() {
                       placeholder="••••••••"
                       autoComplete="new-password"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-ink-faint hover:text-accent transition-colors"
+                    >
+                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
 
