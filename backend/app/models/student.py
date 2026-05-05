@@ -17,5 +17,6 @@ class Student(Base):
     email: Mapped[str | None] = mapped_column(String(190), index=True, nullable=True)
     promotion: Mapped[str] = mapped_column(String(80), index=True)
     classe: Mapped[str | None] = mapped_column(String(80), index=True, nullable=True)
+    gender: Mapped[str | None] = mapped_column(String(1), index=True, nullable=True)  # M / F
     phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

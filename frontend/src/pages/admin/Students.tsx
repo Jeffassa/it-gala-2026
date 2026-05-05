@@ -170,6 +170,7 @@ export default function AdminStudents() {
               <tr>
                 <th>Matricule</th>
                 <th>Nom complet</th>
+                <th>Genre</th>
                 <th>Promotion</th>
                 <th>Classe</th>
                 <th>Email</th>
@@ -182,6 +183,11 @@ export default function AdminStudents() {
                 <tr key={s.id}>
                   <td className="font-mono text-xs">{s.matricule}</td>
                   <td className="font-medium">{s.full_name}</td>
+                  <td>
+                    {s.gender === "M" ? <span className="badge badge-info">M</span>
+                      : s.gender === "F" ? <span className="badge badge-purple">F</span>
+                      : <span className="text-ink-faint">—</span>}
+                  </td>
                   <td><span className="badge">{s.promotion}</span></td>
                   <td>{s.classe ? <span className="badge badge-accent">{s.classe}</span> : "—"}</td>
                   <td className="text-ink-muted">{s.email ?? "—"}</td>
@@ -258,18 +264,20 @@ function ImportModal({
         <div className="space-y-4">
           <div className="bg-bg-elev2 border border-line rounded-xl p-4">
             <p className="text-sm font-semibold mb-2">Format attendu</p>
-            <p className="text-xs text-ink-muted mb-3">Le fichier doit contenir une feuille avec les colonnes suivantes (nom de colonne tolérant accents/casse) :</p>
+            <p className="text-xs text-ink-muted mb-3">Colonnes reconnues (nom tolérant accents/casse). Vous pouvez en mélanger plusieurs :</p>
             <ul className="text-xs space-y-1.5 text-ink-muted">
-              <li>• <code className="text-accent font-mono">matricule</code> <span className="text-ink-faint">— ex : 22-ESATIC0273DN</span> (obligatoire)</li>
-              <li>• <code className="text-accent font-mono">nom</code> ou <code className="text-accent font-mono">nom complet</code> (obligatoire)</li>
-              <li>• <code className="text-accent font-mono">promotion</code> <span className="text-ink-faint">— ex: 2026</span></li>
-              <li>• <code className="text-accent font-mono">classe</code> <span className="text-ink-faint">— ex: GLSI A</span></li>
-              <li>• <code className="text-accent font-mono">email</code> (optionnel)</li>
-              <li>• <code className="text-accent font-mono">telephone</code> (optionnel)</li>
+              <li>• <code className="text-accent font-mono">matricule</code> <span className="text-ink-faint">— ex : 22-ESATIC0273DN</span> <strong className="text-ink">(obligatoire)</strong></li>
+              <li>• <code className="text-accent font-mono">prenom</code> + <code className="text-accent font-mono">nom</code> <span className="text-ink-faint">(seront concaténés)</span> — ou <code className="text-accent font-mono">nom complet</code> seul</li>
+              <li>• <code className="text-accent font-mono">genre</code> ou <code className="text-accent font-mono">sexe</code> <span className="text-ink-faint">— M / F (ou "Masculin"/"Feminin")</span></li>
+              <li>• <code className="text-accent font-mono">classe</code> <span className="text-ink-faint">— ex : GLSI A</span></li>
+              <li>• <code className="text-accent font-mono">promotion</code> <span className="text-ink-faint">— ex : IT3</span></li>
+              <li>• <code className="text-accent font-mono">email</code> · <code className="text-accent font-mono">telephone</code> <span className="text-ink-faint">(optionnels)</span></li>
             </ul>
-            <p className="text-xs text-ink-faint mt-3">
-              💡 Si la colonne <em>promotion</em> est absente, le nom de la feuille Excel sera utilisé, ou vous pouvez la spécifier ci-dessous.
-            </p>
+            <div className="mt-3 p-2.5 rounded-lg bg-accent/10 border border-accent-soft/40">
+              <p className="text-[11px] text-accent-bright leading-relaxed">
+                <strong>📑 Si pas de colonne <em>classe</em></strong> dans une feuille → <strong>le nom de la feuille</strong> est utilisé comme classe (ex: feuille « GLSI A » → tous ses étudiants ont <code className="font-mono">classe = GLSI A</code>). Dans ce cas, choisissez la promotion ci-dessous.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -387,7 +395,7 @@ function StudentForm({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState({ matricule: "", full_name: "", promotion: "", classe: "", email: "", phone: "" });
+  const [form, setForm] = useState({ matricule: "", full_name: "", promotion: "", classe: "", gender: "" as "" | "M" | "F", email: "", phone: "" });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -396,10 +404,11 @@ function StudentForm({
       full_name: initial.full_name,
       promotion: initial.promotion,
       classe: initial.classe ?? "",
+      gender: initial.gender ?? "",
       email: initial.email ?? "",
       phone: initial.phone ?? "",
     });
-    else setForm({ matricule: "", full_name: "", promotion: "", classe: "", email: "", phone: "" });
+    else setForm({ matricule: "", full_name: "", promotion: "", classe: "", gender: "", email: "", phone: "" });
   }, [initial, open]);
 
   async function submit(e: React.FormEvent) {
@@ -415,6 +424,7 @@ function StudentForm({
         full_name: form.full_name,
         promotion: form.promotion,
         classe: form.classe || null,
+        gender: form.gender || null,
         email: form.email || null,
         phone: form.phone || null,
       };
@@ -460,9 +470,19 @@ function StudentForm({
             </div>
           </div>
         </div>
-        <div>
-          <label className="label">Nom complet</label>
-          <input className="input" required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
+          <div>
+            <label className="label">Nom complet</label>
+            <input className="input" required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Aïcha Touré" />
+          </div>
+          <div>
+            <label className="label">Genre</label>
+            <select className="input min-w-[120px]" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value as "" | "M" | "F" })}>
+              <option value="">—</option>
+              <option value="M">Masculin</option>
+              <option value="F">Féminin</option>
+            </select>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

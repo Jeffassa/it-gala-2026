@@ -157,6 +157,7 @@ export interface Student {
   email: string | null;
   promotion: string;
   classe: string | null;
+  gender: "M" | "F" | null;
   phone: string | null;
   created_at: string;
 }

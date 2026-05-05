@@ -32,6 +32,11 @@ def _ensure_columns() -> None:
                 conn.execute(text(
                     "ALTER TABLE students ADD COLUMN classe VARCHAR(80) DEFAULT NULL"
                 ))
+        if "gender" not in student_cols:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE students ADD COLUMN gender VARCHAR(1) DEFAULT NULL"
+                ))
 
 
 @asynccontextmanager

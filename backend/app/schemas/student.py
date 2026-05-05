@@ -1,10 +1,13 @@
 import re
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, EmailStr, field_validator
 
 
 MATRICULE_RE = re.compile(r"^\d{2}-ESATIC\d{4}[A-Z]{2}$")
+
+Gender = Literal["M", "F"]
 
 
 class StudentBase(BaseModel):
@@ -13,6 +16,7 @@ class StudentBase(BaseModel):
     email: EmailStr | None = None
     promotion: str
     classe: str | None = None
+    gender: Gender | None = None
     phone: str | None = None
 
     @field_validator("matricule")
@@ -35,6 +39,7 @@ class StudentUpdate(BaseModel):
     email: EmailStr | None = None
     promotion: str | None = None
     classe: str | None = None
+    gender: Gender | None = None
     phone: str | None = None
 
 
