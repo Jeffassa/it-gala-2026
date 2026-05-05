@@ -26,7 +26,7 @@ def _stats(db: Session) -> DashboardStats:
         select(
             Ticket.type, 
             func.count(Ticket.id),
-            func.coalesce(func.sum(case([(Ticket.status == TicketStatus.SCANNED, 1)], else_=0)), 0),
+            func.coalesce(func.sum(case((Ticket.status == TicketStatus.SCANNED, 1), else_=0)), 0),
             func.coalesce(func.sum(Ticket.price), 0)
         ).group_by(Ticket.type)
     ).all()
