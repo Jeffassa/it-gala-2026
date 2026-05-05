@@ -7,6 +7,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { Avatar } from "@/components/Avatar";
 import { Logo } from "@/components/Logo";
+import { Modal } from "@/components/Modal";
 import { roleLabel } from "@/lib/format";
 import { useAuthStore } from "@/store/auth";
 
@@ -44,8 +45,10 @@ export default function AdminLayout() {
   const nav = useNavigate();
   const loc = useLocation();
   const [open, setOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   function handleLogout() {
+    setShowLogoutConfirm(false);
     logout();
     nav("/");
   }
@@ -86,7 +89,7 @@ export default function AdminLayout() {
               <p className="text-xs text-ink-muted">{user ? roleLabel(user.role) : ""}</p>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutConfirm(true)}
               title="Déconnexion"
               className="w-9 h-9 grid place-items-center rounded-lg border border-line hover:border-red-500/40 hover:text-red-400 transition"
             >
@@ -115,7 +118,7 @@ export default function AdminLayout() {
                 Système opérationnel
               </div>
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 className="btn btn-ghost btn-sm"
                 title="Déconnexion"
               >
@@ -129,6 +132,26 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <Modal
+        open={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirmer la déconnexion"
+      >
+        <div className="space-y-6">
+          <p className="text-ink-muted">
+            Êtes-vous sûr de vouloir vous déconnecter ? Vous quitterez votre session administrative.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button onClick={() => setShowLogoutConfirm(false)} className="btn btn-secondary">
+              Annuler
+            </button>
+            <button onClick={handleLogout} className="btn btn-danger">
+              Se déconnecter
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

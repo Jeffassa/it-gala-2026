@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 
 from app.models.ticket import AttendeeStatus, TicketStatus, TicketType
 
@@ -46,6 +46,21 @@ class TicketOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @field_validator("attendees", mode="before")
+    @classmethod
+    def validate_attendees(cls, v):
+        return v or []
+
+    @field_validator("max_scans", mode="before")
+    @classmethod
+    def validate_max_scans(cls, v):
+        return v if v is not None else 1
+
+    @field_validator("scan_count", mode="before")
+    @classmethod
+    def validate_scan_count(cls, v):
+        return v if v is not None else 0
 
 
 class ScanResult(BaseModel):
