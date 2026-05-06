@@ -1,4 +1,4 @@
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { Camera, Check, CheckCircle2, ScanLine, ShieldAlert, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -22,6 +22,20 @@ function beep(freq = 880, ms = 120) {
     osc.start();
     setTimeout(() => { osc.stop(); ctx.close(); }, ms);
   } catch { /* ignore */ }
+}
+
+// Extrait un code ticket depuis le contenu brut d'un QR code.
+// Tolere : whitespace, retours ligne, guillemets, contenu "URL" qui contient le code,
+// minuscules, etc. Le format attendu est GIA-XXXXXXXXXXXX (hex / alphanumerique).
+function extractTicketCode(raw: string): string {
+  if (!raw) return "";
+  // Retire espaces et caracteres de citation
+  const cleaned = raw.replace(/[\r\n\t\s"']/g, "").trim();
+  // Si on trouve un motif GIA-XXX dedans, on l'extrait
+  const match = cleaned.match(/GIA-[A-Z0-9]+/i);
+  if (match) return match[0].toUpperCase();
+  // Sinon retourne le contenu brut nettoye en majuscules (au cas ou format custom)
+  return cleaned.toUpperCase();
 }
 
 export default function ControllerPage() {
@@ -84,17 +98,28 @@ export default function ControllerPage() {
   async function startCamera() {
     setScanning(true);
     try {
-      const qr = new Html5Qrcode("scanner-region");
+      // formatsToSupport: ne lit que les QR (plus rapide qu'omni-format Code128/EAN/etc.)
+      const qr = new Html5Qrcode("scanner-region", {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        verbose: false,
+      } as any);
       qrRef.current = qr;
       await qr.start(
         { facingMode: "environment" },
         {
-          fps: 20,                                   // 2x plus reactif
-          qrbox: { width: 280, height: 280 },
+          fps: 30,                                              // capture quasi-instantanee
+          qrbox: { width: 240, height: 240 },                   // zone de detection focalisee
           aspectRatio: 1.333,
           disableFlip: false,
+          // Native browser BarcodeDetector quand dispo (Chrome) -> ~10x plus rapide
+          // que la lib JS pure
+          experimentalFeatures: { useBarCodeDetectorIfSupported: true } as any,
+        } as any,
+        (decoded) => {
+          const code = extractTicketCode(decoded);
+          if (code) handleCode(code);
+          else toast.error(`QR illisible : "${decoded.slice(0, 30)}"`);
         },
-        (decoded) => handleCode(decoded.trim()),
         () => undefined
       );
     } catch (err) {
@@ -113,8 +138,9 @@ export default function ControllerPage() {
 
   async function submitManual(e: React.FormEvent) {
     e.preventDefault();
-    if (!manualCode.trim()) return;
-    await handleCode(manualCode.trim().toUpperCase());
+    const code = extractTicketCode(manualCode);
+    if (!code) return;
+    await handleCode(code);
     setManualCode("");
   }
 
