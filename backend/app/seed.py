@@ -71,12 +71,19 @@ def seed() -> None:
             db.refresh(gala)
 
             categories_seed = [
-                ("Meilleur Étudiant", "L'étudiant qui s'est démarqué cette année par son excellence académique et son engagement.", "graduation-cap", 1),
-                ("Meilleur Couple", "Le couple le plus apprécié de la promotion, alliant complicité et inspiration.", "heart", 2),
-                ("Meilleur Sourire", "Celui ou celle dont le sourire illumine le campus et réchauffe les cœurs.", "smile", 3),
-                ("Meilleur Projet IT", "Le projet technologique le plus innovant et impactant de l'année.", "rocket", 4),
-                ("Meilleur Influenceur Tech", "La voix tech la plus suivie et la plus inspirante de la communauté.", "smartphone", 5),
-                ("Coup de Cœur du Jury", "Une personnalité qui a marqué l'année par sa créativité et son engagement.", "gem", 6),
+                ("Top 3 par filière", "Les 3 premiers de chaque filière, par promotion.", "trophy", 1),
+                ("Majors avec mention", "Les majors de chaque filière ayant obtenu une moyenne ≥ 14, par promotion.", "award", 2),
+                ("Meilleur club", "Le club étudiant qui s'est le plus distingué cette année.", "users", 3),
+                ("Meilleur projet étudiant", "Le projet le plus innovant et impactant de l'année.", "rocket", 4),
+                ("Meilleur professeur", "Le professeur le plus apprécié, par promotion.", "graduation-cap", 5),
+                ("Meilleur basketteur", "Le talent du parquet, toutes promotions confondues.", "star", 6),
+                ("Meilleur footballeur", "La star du terrain, toutes promotions confondues.", "star", 7),
+                ("Meilleur badeur", "Celui ou celle qui anime toutes les soirées, par promotion.", "sparkles", 8),
+                ("Meilleur délégué de classe", "Le ou la représentant·e qui a le plus servi sa classe, par promotion.", "vote", 9),
+                ("Meilleur président de promotion", "La voix qui rassemble et qui inspire.", "crown", 10),
+                ("Meilleur duo (couple)", "Le couple le plus apprécié de l'école.", "heart", 11),
+                ("Le/La plus faneur(se)", "La star du charme, par promotion.", "smile", 12),
+                ("Le/La plus sociable", "Connaît tout le monde, par promotion.", "users", 13),
             ]
             cats = []
             for name, desc, icon, idx in categories_seed:
@@ -87,38 +94,10 @@ def seed() -> None:
             for c in cats:
                 db.refresh(c)
 
-            sample_nominees = {
-                "Meilleur Étudiant": [
-                    ("Aïcha Koné", "L3 GLSI 2026"),
-                    ("Yves N'Dri", "M1 SIRI 2026"),
-                    ("Fatou Diallo", "L3 GLSI 2026"),
-                    ("Kouadio Ange", "M2 BDIA 2026"),
-                ],
-                "Meilleur Couple": [
-                    ("Marc & Laure", "L3 GLSI 2026"),
-                    ("Sékou & Awa", "M1 SIRI 2026"),
-                    ("Olivier & Mariam", "L3 RTEL 2026"),
-                ],
-                "Meilleur Sourire": [
-                    ("Kady Touré", "L2 INFO 2026"),
-                    ("Boris Kouamé", "L3 GLSI 2026"),
-                    ("Linda Yao", "M1 SIRI 2026"),
-                ],
-                "Meilleur Projet IT": [
-                    ("EduMatch — IA d'orientation", "L3 GLSI 2026"),
-                    ("AgriScan — Vision artificielle", "M2 BDIA 2026"),
-                    ("CivicVote — eGov", "M1 SIRI 2026"),
-                ],
-                "Meilleur Influenceur Tech": [
-                    ("@dev_aboubakar", "Alumni"),
-                    ("@codeuse_civ", "L3 GLSI 2026"),
-                    ("@tech_aida", "M1 SIRI 2026"),
-                ],
-                "Coup de Cœur du Jury": [
-                    ("Club Robotique ESATIC", "Tous niveaux"),
-                    ("Hackathon GreenTech", "Cross-promo 2026"),
-                ],
-            }
+            # Nominés à ajouter via /admin/nominees (page dédiée).
+            # Les catégories sont créées vides : l'admin uploadera les photos
+            # et saisira les nominés via l'interface, par promotion / filière.
+            sample_nominees: dict = {}
             bio_template = (
                 "Acteur reconnu de la communauté tech, {name} s'est distingué(e) par son engagement, "
                 "sa créativité et sa capacité à fédérer autour de projets ambitieux."
