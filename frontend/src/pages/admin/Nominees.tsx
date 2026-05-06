@@ -130,8 +130,17 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
     setPhotoFile(null);
   }, [initial, open]);
 
+  // Photo obligatoire :
+  //  - en création : il faut un fichier OU une URL non vide
+  //  - en modification : on accepte de garder la photo existante (initial.photo_url)
+  const hasPhoto = !!photoFile || !!form.photo_url.trim() || !!initial?.photo_url;
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!hasPhoto) {
+      toast.error("La photo du nominé est obligatoire — uploadez un fichier ou collez une URL.");
+      return;
+    }
     setSaving(true);
     try {
       let nominee: Nominee;
@@ -164,9 +173,43 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="label">Photo (Upload)</label><input type="file" accept="image/*" className="input py-1.5" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} /></div>
-          <div><label className="label">ou URL directe</label><input className="input" value={form.photo_url} onChange={(e) => setForm({ ...form, photo_url: e.target.value })} placeholder="https://…" disabled={!!photoFile} /></div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="label !mb-0">
+              Photo du nominé <span className="text-red-400 normal-case">*obligatoire</span>
+            </label>
+            {hasPhoto && (
+              <span className="text-[11px] text-emerald-400 inline-flex items-center gap-1">
+                <Check size={12} /> Photo prête
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                className="input py-1.5"
+                onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+              />
+              <p className="text-[11px] text-ink-faint mt-1">Uploadez un fichier (jpg/png/webp)</p>
+            </div>
+            <div>
+              <input
+                className="input"
+                value={form.photo_url}
+                onChange={(e) => setForm({ ...form, photo_url: e.target.value })}
+                placeholder="https://…"
+                disabled={!!photoFile}
+              />
+              <p className="text-[11px] text-ink-faint mt-1">… ou collez une URL directe</p>
+            </div>
+          </div>
+          {initial?.photo_url && !photoFile && !form.photo_url.trim() && (
+            <p className="text-[11px] text-ink-muted mt-2">
+              ✓ Photo actuelle conservée — laissez vide pour ne pas la changer.
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-4">
           <div><label className="label">Email de contact</label><input className="input max-w-sm" type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} /></div>
@@ -177,11 +220,18 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
           <label className="label">Réalisations (une par ligne)</label>
           <textarea className="input min-h-[120px]" value={form.achievements} onChange={(e) => setForm({ ...form, achievements: e.target.value })} placeholder="Projet open-source XYZ&#10;Conférence DevFest 2025&#10;Mentor Tech Sisters" />
         </div>
-        <div className="flex justify-end gap-2 pt-4 border-t border-line">
-          <button type="button" onClick={onClose} className="btn btn-secondary">Annuler</button>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? <Spinner size={16} /> : <><Check size={16} /> Enregistrer</>}
-          </button>
+        <div className="flex items-center justify-between gap-2 pt-4 border-t border-line">
+          {!hasPhoto && (
+            <p className="text-xs text-red-400">
+              ⚠️ Une photo est requise pour enregistrer
+            </p>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <button type="button" onClick={onClose} className="btn btn-secondary">Annuler</button>
+            <button type="submit" className="btn btn-primary" disabled={saving || !hasPhoto}>
+              {saving ? <Spinner size={16} /> : <><Check size={16} /> Enregistrer</>}
+            </button>
+          </div>
         </div>
       </form>
     </Modal>
