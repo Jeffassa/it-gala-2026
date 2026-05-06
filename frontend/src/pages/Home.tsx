@@ -15,17 +15,35 @@ import { formatDate } from "@/lib/format";
 import type { Category, Gala, Souvenir } from "@/lib/types";
 
 const CATEGORY_FALLBACK = [
-  { name: "Meilleur Étudiant", description: "L'étudiant qui s'est démarqué cette année par son excellence académique et son engagement.", icon: "graduation-cap" },
-  { name: "Meilleur Couple", description: "Le couple le plus apprécié de la promotion, alliant complicité et inspiration.", icon: "heart" },
-  { name: "Meilleur Sourire", description: "Celui ou celle dont le sourire illumine le campus.", icon: "smile" },
-  { name: "Meilleur Projet IT", description: "Le projet technologique le plus innovant et impactant de l'année.", icon: "rocket" },
-  { name: "Meilleur Influenceur Tech", description: "La voix tech la plus suivie et la plus inspirante.", icon: "smartphone" },
-  { name: "Coup de Cœur du Jury", description: "Une personnalité qui a marqué l'année par sa créativité.", icon: "gem" },
+  { name: "Top 3 par filière", description: "Les 3 premiers de chaque filière, par promotion.", icon: "trophy" },
+  { name: "Majors avec mention", description: "Les majors de chaque filière ayant obtenu une moyenne ≥ 14, par promotion.", icon: "award" },
+  { name: "Meilleur club", description: "Le club étudiant qui s'est le plus distingué cette année.", icon: "users" },
+  { name: "Meilleur projet étudiant", description: "Le projet le plus innovant et impactant de l'année.", icon: "rocket" },
+  { name: "Meilleur professeur", description: "Le professeur le plus apprécié, par promotion.", icon: "graduation-cap" },
+  { name: "Meilleur basketteur", description: "Le talent du parquet, toutes promotions confondues.", icon: "star" },
+  { name: "Meilleur footballeur", description: "La star du terrain, toutes promotions confondues.", icon: "star" },
+  { name: "Meilleur badeur", description: "Celui ou celle qui anime toutes les soirées, par promotion.", icon: "sparkles" },
+  { name: "Meilleur délégué de classe", description: "Le ou la représentant·e qui a le plus servi sa classe, par promotion.", icon: "vote" },
+  { name: "Meilleur président de promotion", description: "La voix qui rassemble et qui inspire.", icon: "crown" },
+  { name: "Meilleur duo (couple)", description: "Le couple le plus apprécié de l'école.", icon: "heart" },
+  { name: "Le/La plus faneur(se)", description: "La star du charme, par promotion.", icon: "smile" },
+  { name: "Le/La plus sociable", description: "Connaît tout le monde, par promotion.", icon: "users" },
 ];
 
 const CATEGORY_ICON_MAP: Record<string, any> = {
-  "graduation-cap": GraduationCap, "heart": Heart, "smile": Smile,
-  "rocket": Rocket, "smartphone": Smartphone, "gem": Gem,
+  "graduation-cap": GraduationCap,
+  "heart": Heart,
+  "smile": Smile,
+  "rocket": Rocket,
+  "smartphone": Smartphone,
+  "gem": Gem,
+  "trophy": Trophy,
+  "award": Award,
+  "users": Users,
+  "star": Star,
+  "sparkles": Sparkles,
+  "crown": Crown,
+  "vote": Vote,
 };
 
 // Matin — IT Connect
@@ -59,7 +77,7 @@ const PROGRAM_EVENING = [
 
 const STATS = [
   { value: "+200", label: "Invités attendus" },
-  { value: "6", label: "Catégories à départager" },
+  { value: "13", label: "Catégories à départager" },
   { value: "+20", label: "Nominés en lice" },
   { value: "1", label: "Soirée mémorable" },
 ];
@@ -292,7 +310,7 @@ export default function HomePage() {
                   <Star size={26} />
                 </span>
                 <div>
-                  <p className="font-serif text-2xl font-bold mb-1">Une nuit. Six trophées. Mille souvenirs.</p>
+                  <p className="font-serif text-2xl font-bold mb-1">Une nuit. Des trophées. Mille souvenirs.</p>
                   <p className="text-ink-muted text-sm">Réservez votre place et faites partie de l'histoire.</p>
                 </div>
               </div>
@@ -342,7 +360,7 @@ export default function HomePage() {
           <FadeIn className="text-center max-w-2xl mx-auto mb-14">
             <span className="section-eyebrow">Reconnaissance</span>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-balance">
-              Six catégories. <span className="primary-text">Une seule consécration</span>.
+              13 catégories. <span className="primary-text">Une seule consécration</span>.
             </h2>
             <p className="text-ink-muted text-lg">
               Chaque catégorie célèbre une dimension différente de l'excellence. À vous de désigner vos lauréats.
@@ -507,7 +525,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <InfoCard delay={0} Icon={Calendar} label="Date">
               {gala ? formatDate(gala.event_date) : "06 juin 2026"}
-              <span className="block text-ink-muted text-sm mt-1">À partir de 19h</span>
+              <span className="block text-ink-muted text-sm mt-1">A partir de 08h00 pour l'it connect</span>
+              <span className="block text-ink-muted text-sm mt-1">et 20h00 pour l'it gala</span>
             </InfoCard>
             <InfoCard delay={60} Icon={MapPin} label="Lieu">
               {gala?.location ?? "Palais de la Culture, Abidjan"}
@@ -518,7 +537,7 @@ export default function HomePage() {
               <span className="block text-base">Gbonhi · <span className="text-accent">65 000 FCFA</span></span>
             </InfoCard>
             <InfoCard delay={180} Icon={Shirt} label="Code vestimentaire">
-              {gala?.dress_code ?? "Tenue de soirée — Black Tie"}
+              {gala?.dress_code ?? "Tenue de soirée"}
             </InfoCard>
             <InfoCard delay={240} Icon={Drama} label="Programme">
               <span className="block text-base text-ink-muted text-sm whitespace-pre-line">
@@ -526,7 +545,7 @@ export default function HomePage() {
               </span>
             </InfoCard>
             <InfoCard delay={300} Icon={Users} label="Public">
-              Étudiants, alumni, mentors, partenaires et acteurs de l'écosystème tech.
+              L'ensemble du corps éducatif de l'ESATIC, étudiants, alumni, partenaires et invités.
             </InfoCard>
           </div>
         </div>
