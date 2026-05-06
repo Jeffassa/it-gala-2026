@@ -360,7 +360,7 @@ export default function HomePage() {
           <FadeIn className="text-center max-w-2xl mx-auto mb-14">
             <span className="section-eyebrow">Reconnaissance</span>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-balance">
-              13 catégories. <span className="primary-text">Une seule consécration</span>.
+              Quelques catégories. <span className="primary-text"> présentes </span>.
             </h2>
             <p className="text-ink-muted text-lg">
               Chaque catégorie célèbre une dimension différente de l'excellence. À vous de désigner vos lauréats.
