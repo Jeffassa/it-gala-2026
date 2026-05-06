@@ -160,7 +160,7 @@ export default function HomePage() {
             <p className="font-serif italic text-accent text-xl mb-4">« {gala?.theme ?? "L'innovation au cœur de l'excellence"} »</p>
             <p className="text-ink-muted text-lg max-w-2xl mx-auto mb-9">
               Le <strong className="text-ink">IT Gala</strong> célèbre les talents qui façonnent le numérique de demain.
-              Étudiants, alumni, créateurs et innovateurs : une soirée pour reconnaître les meilleurs et inspirer la suite;
+              {/* Étudiants, alumni, créateurs et innovateurs : une soirée pour reconnaître les meilleurs et inspirer la suite; */}
               UNE SOIRÉE D’EXCELLENCE, DE NETWORKING ET DE CÉLÉBRATION
 
             </p>
