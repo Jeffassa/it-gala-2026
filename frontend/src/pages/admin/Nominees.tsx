@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Empty } from "@/components/Empty";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
-import { apiError, categoryApi, galaApi, nomineeApi } from "@/lib/api";
+import { apiError, assetUrl, categoryApi, galaApi, nomineeApi } from "@/lib/api";
 import type { Category, Gala, Nominee } from "@/lib/types";
 import { toast } from "@/store/toast";
 
@@ -80,7 +80,7 @@ export default function AdminNominees() {
             <div key={n.id} className="bg-bg-elev border border-line rounded-2xl overflow-hidden hover:border-accent/60 transition">
               <div className="aspect-square bg-gradient-to-br from-bg-elev2 to-bg-elev3 grid place-items-center overflow-hidden">
                 {n.photo_url
-                  ? <img src={n.photo_url} alt={n.name} className="w-full h-full object-cover" />
+                  ? <img src={assetUrl(n.photo_url)} alt={n.name} className="w-full h-full object-cover" />
                   : <User size={48} className="text-accent/40" strokeWidth={1.4} />}
               </div>
               <div className="p-4">

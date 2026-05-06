@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Upload, MoveUp, MoveDown, Camera, ImageIcon } from "@/components/Icon";
-import { galaApi, souvenirApi, apiError } from "@/lib/api";
+import { galaApi, souvenirApi, apiError, assetUrl } from "@/lib/api";
 import type { Gala, Souvenir } from "@/lib/types";
 import { toast } from "@/store/toast";
 
@@ -182,7 +182,7 @@ function SouvenirCard({ souvenir, index, total, onDelete, onUpload, onMove }: {
       <div className="aspect-video bg-bg-elev2 relative group flex items-center justify-center border-b border-line">
         {souvenir.image_url && !error ? (
           <img
-            src={souvenir.image_url}
+            src={assetUrl(souvenir.image_url)}
             alt={souvenir.title}
             className="w-full h-full object-cover"
             onError={() => setError(true)}

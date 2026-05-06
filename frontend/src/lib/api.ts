@@ -30,6 +30,24 @@ const baseURL = import.meta.env.VITE_API_URL || "/api/v1";
 
 export const api = axios.create({ baseURL });
 
+/**
+ * Resolve une URL d'asset upload (photo nominé / souvenir) en URL absolue
+ * vers le backend. En dev, retourne tel quel (proxy Vite). En prod, prefixe
+ * avec l'origine du backend.
+ *
+ * Accepte : null, "", "/uploads/...", "https://...".
+ */
+export function assetUrl(path: string | null | undefined): string | undefined {
+  if (!path) return undefined;
+  if (/^https?:\/\//i.test(path)) return path; // deja absolu
+  // baseURL ressemble a "https://it-gala-api.onrender.com/api/v1" (prod)
+  // ou "http://localhost:8000/api/v1" (dev) ou "/api/v1" (dev relatif)
+  const apiBase = baseURL.replace(/\/api\/v[0-9]+\/?$/, "");
+  // Si apiBase est vide (cas "/api/v1" relatif) -> on garde le path relatif tel quel
+  if (!apiBase) return path;
+  return `${apiBase}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) config.headers.Authorization = `Bearer ${token}`;

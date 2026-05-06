@@ -9,7 +9,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Empty } from "@/components/Empty";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
-import { apiError, categoryApi, galaApi, nomineeApi, voteApi } from "@/lib/api";
+import { apiError, assetUrl, categoryApi, galaApi, nomineeApi, voteApi } from "@/lib/api";
 import type { Category, Gala, MyVote, Nominee } from "@/lib/types";
 import { toast } from "@/store/toast";
 
@@ -193,7 +193,7 @@ function CategoryVoteView({
                   className="block w-full aspect-square bg-gradient-to-br from-bg-elev2 to-bg-elev3 grid place-items-center text-ink-muted overflow-hidden"
                 >
                   {n.photo_url
-                    ? <img src={n.photo_url} alt={n.name} className="w-full h-full object-cover hover:scale-105 transition" />
+                    ? <img src={assetUrl(n.photo_url)} alt={n.name} className="w-full h-full object-cover hover:scale-105 transition" />
                     : <User size={56} strokeWidth={1.4} className="text-accent/40" />}
                 </button>
                 <div className="p-4">
@@ -248,7 +248,7 @@ function NomineeDetailModal({
       <div className="grid md:grid-cols-[200px_1fr] gap-6">
         <div className="aspect-square w-full bg-gradient-to-br from-bg-elev2 to-bg-elev3 rounded-2xl grid place-items-center overflow-hidden">
           {nominee.photo_url
-            ? <img src={nominee.photo_url} alt={nominee.name} className="w-full h-full object-cover" />
+            ? <img src={assetUrl(nominee.photo_url)} alt={nominee.name} className="w-full h-full object-cover" />
             : <User size={64} className="text-accent/40" strokeWidth={1.4} />}
         </div>
         <div>

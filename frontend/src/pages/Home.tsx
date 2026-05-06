@@ -10,7 +10,7 @@ import {
   Trophy, Users, Video, Vote, Wallet, X,
 } from "@/components/Icon";
 import { Logo } from "@/components/Logo";
-import { categoryApi, galaApi, souvenirApi } from "@/lib/api";
+import { assetUrl, categoryApi, galaApi, souvenirApi } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import type { Category, Gala, Souvenir } from "@/lib/types";
 
@@ -418,7 +418,7 @@ export default function HomePage() {
                     gradient={gradients[i % gradients.length]}
                     Icon={icons[i % icons.length]}
                     title={s.title}
-                    image={s.image_url}
+                    image={assetUrl(s.image_url)}
                   />
                 );
               })
