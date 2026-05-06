@@ -98,7 +98,7 @@ export default function HomePage() {
               <MonitorPlay size={16} /> Grand écran
             </Link>
             <Link to="/login" className="btn btn-primary btn-sm sm:btn">
-              <span className="hidden sm:inline">Mon espace de vote</span>
+              <span className="hidden sm:inline">Mon espace</span>
               <span className="sm:hidden">Voter</span>
               <ArrowRight size={16} />
             </Link>
@@ -191,8 +191,8 @@ export default function HomePage() {
                     <p className="font-semibold text-sm">{gala?.location.split(",")[0] ?? "Palais de la Culture"}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Dress code</p>
-                    <p className="font-semibold text-sm">Rouge bordeau, or rosé et noir</p>
+                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Tenue</p>
+                    <p className="font-semibold text-sm">Rouge bordeaux, or rosé et noir</p>
                   </div>
                 </div>
               </div>

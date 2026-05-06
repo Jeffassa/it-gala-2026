@@ -1,14 +1,16 @@
+import html
 import logging
 import secrets
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import get_current_user
+from app.core.limiter import limiter
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.password_reset import PasswordResetToken
 from app.models.user import User, UserRole
@@ -28,7 +30,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=TokenResponse)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("5/hour")
+def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
     existing = db.scalar(select(User).where(User.email == payload.email))
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email déjà utilisé")
@@ -47,7 +50,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("10/minute")
+def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     user = db.scalar(select(User).where(User.email == payload.email))
     if user is None or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
@@ -69,6 +73,10 @@ def me(current: User = Depends(get_current_user)) -> UserOut:
 
 
 def _build_reset_email_html(reset_url: str, user_name: str) -> str:
+    # Echappement HTML pour eviter une injection si user_name contient
+    # des caracteres speciaux (ex: <script>, </h1></body>...)
+    user_name = html.escape(user_name)
+    reset_url = html.escape(reset_url, quote=True)
     return f"""<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#0E0808;font-family:Arial, Helvetica, sans-serif;color:#FFFFFF;">
@@ -120,7 +128,8 @@ _GENERIC_FORGOT_RESPONSE = {
 
 
 @router.post("/forgot-password")
-def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)) -> dict:
+@limiter.limit("3/minute")
+def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)) -> dict:
     """Send a password reset email if the account exists.
 
     Always returns 200 with a generic message to prevent email enumeration.
@@ -169,7 +178,8 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
 
 
 @router.post("/reset-password")
-def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
+@limiter.limit("10/hour")
+def reset_password(request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
     """Reset the user's password using a valid token."""
     reset_token = db.scalar(
         select(PasswordResetToken).where(PasswordResetToken.token == payload.token)

@@ -1,9 +1,15 @@
+import logging
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy import inspect, text
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.v1 import (
     audit, auth, categories, certificates, galas, live, nominees,
@@ -11,7 +17,27 @@ from app.api.v1 import (
 )
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.core.limiter import limiter
 from app.models import *  # noqa: F401,F403
+
+logger = logging.getLogger(__name__)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Ajoute des headers HTTP de securite sur toutes les reponses."""
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # Empeche les navigateurs de deviner le MIME (anti MIME-sniffing XSS)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        # Empeche le clickjacking : aucune iframe externe
+        response.headers["X-Frame-Options"] = "DENY"
+        # Limite les infos envoyees au cross-origin via Referer
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        # Coupe les permissions de capteurs sensibles cote client
+        response.headers["Permissions-Policy"] = (
+            "camera=(self), microphone=(), geolocation=(), payment=()"
+        )
+        return response
 
 
 def _ensure_columns() -> None:
@@ -62,6 +88,13 @@ def _ensure_columns() -> None:
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     _ensure_columns()
+    # Avertir si la SECRET_KEY par defaut est utilisee en prod
+    if settings.SECRET_KEY in ("dev-secret-change-me", "dev-secret-please-change-in-prod-32chars", "change-me-in-prod-openssl-rand-hex-32"):
+        logger.warning(
+            "[SECURITY] SECRET_KEY est sur la valeur par defaut. "
+            "Generez-en une via : python -c \"import secrets; print(secrets.token_hex(32))\" "
+            "et definissez-la dans la variable d'environnement SECRET_KEY."
+        )
     yield
 
 
@@ -72,6 +105,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Rate limiting (slowapi) — empeche brute force login, spam forgot-password, etc.
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Headers HTTP de securite (X-Frame, X-Content-Type, Referrer-Policy, Permissions-Policy)
+app.add_middleware(SecurityHeadersMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -80,7 +120,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
 os.makedirs("uploads/nominees", exist_ok=True)
 os.makedirs("uploads/souvenirs", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

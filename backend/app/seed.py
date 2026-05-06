@@ -53,15 +53,15 @@ def seed() -> None:
                 edition_year=2026,
                 theme="L'innovation au cœur de l'excellence",
                 event_date=datetime(2026, 6, 6, 19, 0, 0),
-                location="Palais de la Culture, Abidjan",
-                dress_code="Tenue de soirée — Black Tie",
+                location="devinez",
+                dress_code="Rouge bordeaux, or rosé et noir",
                 program=(
                     "19h — Cocktail de bienvenue\n"
                     "20h — Cérémonie de remise des prix\n"
                     "22h — Dîner de gala\n"
                     "23h — Soirée dansante"
                 ),
-                tiktok_url="https://tiktok.com/@itawards",
+                tiktok_url="https://tiktok.com/esaticstudents",
                 telegram_url="https://t.me/itawards",
                 is_active=True,
                 voting_open=True,
