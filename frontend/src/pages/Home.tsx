@@ -282,7 +282,7 @@ export default function HomePage() {
               Baptisé IT-Gala, le dîner gala des étudiants de l’ESATIC est le plus grand évènement festif et professionnel organisé par le Conseil Estudiantin de l’ESATIC (C2E) qui a pour but de créer un cadre associatif et d’échanges.
             </p>
             <p className="text-ink-muted leading-relaxed mb-7">
-              Au-delà de son aspect purement festif, il réunit les grands acteurs de l’industrie des Technologies de l’Information et de la Communication (TIC). Il favorise également les retrouvailles entre toutes les promotions de l’ESATIC, et fait le bilan de toutes les activités effectuées au cours de l’année. La 7ème Edition du gala de fin d’année se déroulera le 06 Juin 2026 à 20H.
+              Au-delà de son aspect purement festif, il réunit les grands acteurs de l’industrie des Technologies de l’Information et de la Communication (TIC). Il favorise également les retrouvailles entre toutes les promotions de l’ESATIC, et fait le bilan de toutes les activités effectuées au cours de l’année. La 7ème Edition du gala de fin d’année se déroulera en deux phases dont la première, l'it connect débutera à 08h00 et la seconde, l'it gala se déroulera à 20h00 le 06 juin 2026.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/login" className="btn btn-accent">
@@ -366,8 +366,8 @@ export default function HomePage() {
               Chaque catégorie célèbre une dimension différente de l'excellence. À vous de désigner vos lauréats.
             </p>
           </FadeIn>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(categories.length > 0 ? categories : CATEGORY_FALLBACK).map((c, i) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {(categories.length > 0 ? categories : CATEGORY_FALLBACK).slice(0, 4).map((c, i) => {
               const IconCmp = CATEGORY_ICON_MAP[(c as any).icon] ?? Trophy;
               return (
                 <FadeIn key={c.name} delay={i * 60}>
