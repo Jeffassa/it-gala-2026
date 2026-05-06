@@ -28,12 +28,33 @@ const CATEGORY_ICON_MAP: Record<string, any> = {
   "rocket": Rocket, "smartphone": Smartphone, "gem": Gem,
 };
 
-const PROGRAM_STEPS = [
-  { time: "19:00", title: "Cocktail de bienvenue", desc: "Accueil des invités, photos officielles sur le tapis rouge.", icon: Wallet },
-  { time: "20:00", title: "Cérémonie d'ouverture", desc: "Discours, performances et lancement de la soirée.", icon: Drama },
-  { time: "20:30", title: "Remise des trophées", desc: "Annonce des lauréats dans chacune des catégories.", icon: Trophy },
-  { time: "22:00", title: "Dîner de gala", desc: "Repas d'exception préparé par un chef invité.", icon: Crown },
-  { time: "23:00", title: "Soirée dansante", desc: "DJ set, performances live et after-show.", icon: Video },
+// Matin — IT Connect
+const PROGRAM_MORNING = [
+  { time: "08h00 – 08h30", title: "Accueil des participants", desc: "Installation et émargement.", icon: Users },
+  { time: "08h30 – 08h45", title: "Mot d'ouverture", desc: "Présentation de l'activité.", icon: Drama },
+  { time: "08h45 – 09h30", title: "Panel de professionnels", desc: "Échanges avec des experts du secteur tech.", icon: Sparkles },
+  { time: "09h30 – 10h00", title: "Partage d'expérience d'alumni", desc: "Témoignages d'anciens étudiants.", icon: GraduationCap },
+  { time: "10h00 – 10h20", title: "Présentation IT-Foundation", desc: "Mission, vision et engagements.", icon: Rocket },
+  { time: "10h20 – 10h40", title: "IT Awards — Volet 1", desc: "Distinctions académiques.", icon: Award },
+  { time: "10h40 – 11h00", title: "Attribution de parrains", desc: "Programme de mentorat.", icon: Heart },
+  { time: "11h00 – 11h30", title: "Tombola & animation", desc: "Animation interactive.", icon: Gem },
+  { time: "11h30 – 12h00", title: "Cocktail & Networking", desc: "Échanges informels.", icon: Smile },
+];
+
+// Soir — IT Gala
+const PROGRAM_EVENING = [
+  { time: "20h00 – 20h30", title: "Cocktail & installation", desc: "Accueil des invités, photos officielles.", icon: Smile },
+  { time: "20h30 – 20h45", title: "Allocutions", desc: "Mots de bienvenue.", icon: Drama },
+  { time: "20h45 – 21h00", title: "Grand bilan de l'année", desc: "Rétrospective de l'année écoulée.", icon: Sparkles },
+  { time: "21h00 – 21h20", title: "Récompenses Hackathon & IT Awards", desc: "Remise des trophées.", icon: Trophy },
+  { time: "21h20 – 22h00", title: "Défilé", desc: "Présentation des invités sur le tapis rouge.", icon: Star },
+  { time: "22h00 – 23h00", title: "Restauration", desc: "Dîner de gala.", icon: Crown },
+  { time: "23h00 – 23h40", title: "IT Queen & King", desc: "Élection des figures de la soirée.", icon: Crown },
+  { time: "23h40 – 00h00", title: "Nuit des talents", desc: "Showcase de talents étudiants.", icon: Video },
+  { time: "00h00 – 00h20", title: "Quiz & mini-jeux", desc: "Animations interactives.", icon: Gem },
+  { time: "00h20 – 00h40", title: "Cérémonie des roses", desc: "Moment d'hommage.", icon: Heart },
+  { time: "00h40 – 01h20", title: "Prestation d'artiste", desc: "Performance live.", icon: Music2 },
+  { time: "01h20 – 02h00", title: "Bal poussière", desc: "Soirée dansante.", icon: Music2 },
 ];
 
 const STATS = [
@@ -284,34 +305,30 @@ export default function HomePage() {
       <section id="programme" className="py-28 bg-bg-elev/40 border-y border-line">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <FadeIn className="text-center max-w-2xl mx-auto mb-16">
-            <span className="section-eyebrow">Programme de la soirée</span>
+            <span className="section-eyebrow">Programme de la journée</span>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-balance">
-              Un déroulé orchestré <span className="accent-text">à la minute près</span>.
+              Du matin au <span className="accent-text">bout de la nuit</span>.
             </h2>
-            <p className="text-ink-muted text-lg">Cinq temps forts pour vivre une soirée d'exception.</p>
+            <p className="text-ink-muted text-lg">
+              Deux temps forts : <strong className="text-ink">IT Connect</strong> en matinée, puis le <strong className="text-ink">IT Gala</strong> en soirée.
+            </p>
           </FadeIn>
 
-          <div className="relative">
-            <div className="absolute left-[27px] md:left-1/2 md:-translate-x-px top-2 bottom-2 w-px bg-gradient-to-b from-accent/0 via-accent/40 to-accent/0" />
-            <ol className="space-y-6">
-              {PROGRAM_STEPS.map((step, i) => (
-                <FadeIn key={step.time} delay={i * 80}>
-                  <li className={`relative grid md:grid-cols-2 gap-6 md:gap-12 items-center ${i % 2 ? "md:[&>*:first-child]:order-2" : ""}`}>
-                    <div className={`md:text-${i % 2 ? "left" : "right"}`}>
-                      <p className="font-mono text-accent text-sm tracking-widest mb-1">{step.time}</p>
-                      <h3 className="font-serif text-2xl font-bold mb-2">{step.title}</h3>
-                      <p className="text-ink-muted">{step.desc}</p>
-                    </div>
-                    <div className="relative pl-16 md:pl-0">
-                      <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-full bg-bg-elev border-2 border-accent/40 shadow-glow">
-                        <step.icon size={22} className="text-accent-bright" />
-                      </div>
-                    </div>
-                  </li>
-                </FadeIn>
-              ))}
-            </ol>
-          </div>
+          {/* Matin — IT Connect */}
+          <FadeIn className="text-center mb-10 mt-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-2">Matinée</p>
+            <h3 className="font-serif text-3xl font-bold mb-1">IT Connect</h3>
+            <p className="text-ink-muted text-sm">Networking, panels et distinctions académiques.</p>
+          </FadeIn>
+          <ProgramTimeline steps={PROGRAM_MORNING} />
+
+          {/* Soir — IT Gala */}
+          <FadeIn className="text-center mb-10 mt-20">
+            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-2">Soirée</p>
+            <h3 className="font-serif text-3xl font-bold mb-1">IT Gala</h3>
+            <p className="text-ink-muted text-sm">La grande célébration, des allocutions au bal poussière.</p>
+          </FadeIn>
+          <ProgramTimeline steps={PROGRAM_EVENING} />
         </div>
       </section>
 
@@ -615,6 +632,34 @@ export default function HomePage() {
           <p>Une initiative pour célébrer la tech ivoirienne.</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+type ProgramStep = { time: string; title: string; desc: string; icon: any };
+
+function ProgramTimeline({ steps }: { steps: ProgramStep[] }) {
+  return (
+    <div className="relative">
+      <div className="absolute left-[27px] md:left-1/2 md:-translate-x-px top-2 bottom-2 w-px bg-gradient-to-b from-accent/0 via-accent/40 to-accent/0" />
+      <ol className="space-y-6">
+        {steps.map((step, i) => (
+          <FadeIn key={`${step.time}-${i}`} delay={i * 60}>
+            <li className={`relative grid md:grid-cols-2 gap-6 md:gap-12 items-center ${i % 2 ? "md:[&>*:first-child]:order-2" : ""}`}>
+              <div className={`md:text-${i % 2 ? "left" : "right"}`}>
+                <p className="font-mono text-accent text-sm tracking-widest mb-1">{step.time}</p>
+                <h4 className="font-serif text-xl font-bold mb-2">{step.title}</h4>
+                <p className="text-ink-muted text-sm">{step.desc}</p>
+              </div>
+              <div className="relative pl-16 md:pl-0">
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-full bg-bg-elev border-2 border-accent/40 shadow-glow">
+                  <step.icon size={22} className="text-accent-bright" />
+                </div>
+              </div>
+            </li>
+          </FadeIn>
+        ))}
+      </ol>
     </div>
   );
 }
