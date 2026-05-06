@@ -22,6 +22,7 @@ from app.models.student import Student
 
 
 MATRICULE_RE = re.compile(r"^\d{2}-ESATIC\d{4}[A-Z]{2}$")
+EMAIL_RE = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 
 # Tolerant header mapping: Excel header (lowercased / accents stripped) -> internal field
@@ -226,8 +227,19 @@ def import_students_from_xlsx(
                     continue
 
             gender = _normalize_gender(data["gender"])
-            email = data["email"] or None
+            
+            email = data["email"].lower() if data["email"] else None
+            if email and not EMAIL_RE.match(email):
+                skipped += 1
+                errors.append(f"Ligne {ri} : email « {email} » invalide pour {matricule}.")
+                continue
+                
             phone = data["phone"] or None
+            if phone:
+                # Basic cleaning: remove spaces, dots, dashes
+                phone = re.sub(r"[\s.-]+", "", phone)
+                if len(phone) < 8: # Minimal sanity check
+                    phone = data["phone"] # fallback to original if too short to be cleaned
 
             existing = db.scalar(select(Student).where(Student.matricule == matricule))
             if existing:

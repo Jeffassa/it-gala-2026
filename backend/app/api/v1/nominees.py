@@ -1,6 +1,9 @@
 import os
 import shutil
+from io import BytesIO
+
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from PIL import Image, UnidentifiedImageError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -81,7 +84,7 @@ def delete_nominee(nominee_id: int, db: Session = Depends(get_db)) -> None:
 
 
 @router.post("/{nominee_id}/photo", response_model=NomineeOut, dependencies=[Depends(require_admin)])
-def upload_nominee_photo(
+async def upload_nominee_photo(
     nominee_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -93,14 +96,29 @@ def upload_nominee_photo(
     if not file.filename:
         raise HTTPException(status_code=400, detail="Fichier manquant")
 
-    ext = os.path.splitext(file.filename)[1]
-    if not ext:
-        ext = ".jpg"
+    # 1. Validation de la taille (max 5 Mo)
+    MAX_SIZE = 5 * 1024 * 1024
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 5 Mo)")
+
+    # 2. Validation de l'extension
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in (".jpg", ".jpeg", ".png", ".webp"):
+        raise HTTPException(status_code=400, detail="Format d'image non supporté (.jpg, .png, .webp uniquement)")
+
+    # 3. Validation du contenu réel via Pillow
+    try:
+        img = Image.open(BytesIO(content))
+        img.verify()  # Vérifie si le fichier est corrompu ou n'est pas une image
+    except (UnidentifiedImageError, Exception):
+        raise HTTPException(status_code=400, detail="Fichier corrompu ou n'étant pas une image valide")
+
     filename = f"{n.id}{ext}"
     filepath = os.path.join("uploads", "nominees", filename)
 
     with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(content)
 
     n.photo_url = f"/uploads/nominees/{filename}"
     db.commit()

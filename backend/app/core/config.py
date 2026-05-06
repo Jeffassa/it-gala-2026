@@ -29,5 +29,12 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
+    def validate_security(self):
+        if self.SECRET_KEY == "dev-secret-change-me":
+            # Only allow default secret if we are clearly in a local dev environment
+            if "localhost" not in self.DATABASE_URL and "127.0.0.1" not in self.DATABASE_URL:
+                raise ValueError("SECRET_KEY must be changed for production!")
+
 
 settings = Settings()
+settings.validate_security()
