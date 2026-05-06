@@ -302,33 +302,37 @@ export default function HomePage() {
       </section>
 
       {/* Programme */}
-      <section id="programme" className="py-28 bg-bg-elev/40 border-y border-line">
+      <section id="programme" className="py-24 bg-bg-elev/40 border-y border-line">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <FadeIn className="text-center max-w-2xl mx-auto mb-16">
+          <FadeIn className="text-center max-w-2xl mx-auto mb-12">
             <span className="section-eyebrow">Programme de la journée</span>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-balance">
               Du matin au <span className="accent-text">bout de la nuit</span>.
             </h2>
-            <p className="text-ink-muted text-lg">
+            <p className="text-ink-muted">
               Deux temps forts : <strong className="text-ink">IT Connect</strong> en matinée, puis le <strong className="text-ink">IT Gala</strong> en soirée.
             </p>
           </FadeIn>
 
-          {/* Matin — IT Connect */}
-          <FadeIn className="text-center mb-10 mt-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-2">Matinée</p>
-            <h3 className="font-serif text-3xl font-bold mb-1">IT Connect</h3>
-            <p className="text-ink-muted text-sm">Networking, panels et distinctions académiques.</p>
-          </FadeIn>
-          <ProgramTimeline steps={PROGRAM_MORNING} />
-
-          {/* Soir — IT Gala */}
-          <FadeIn className="text-center mb-10 mt-20">
-            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-2">Soirée</p>
-            <h3 className="font-serif text-3xl font-bold mb-1">IT Gala</h3>
-            <p className="text-ink-muted text-sm">La grande célébration, des allocutions au bal poussière.</p>
-          </FadeIn>
-          <ProgramTimeline steps={PROGRAM_EVENING} />
+          {/* Deux colonnes side-by-side sur desktop, stacked sur mobile */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <FadeIn>
+              <ProgramColumn
+                eyebrow="Matinée"
+                title="IT Connect"
+                subtitle="Networking, panels et distinctions académiques."
+                steps={PROGRAM_MORNING}
+              />
+            </FadeIn>
+            <FadeIn delay={120}>
+              <ProgramColumn
+                eyebrow="Soirée"
+                title="IT Gala"
+                subtitle="La grande célébration, des allocutions au bal poussière."
+                steps={PROGRAM_EVENING}
+              />
+            </FadeIn>
+          </div>
         </div>
       </section>
 
@@ -638,26 +642,39 @@ export default function HomePage() {
 
 type ProgramStep = { time: string; title: string; desc: string; icon: any };
 
-function ProgramTimeline({ steps }: { steps: ProgramStep[] }) {
+function ProgramColumn({
+  eyebrow, title, subtitle, steps,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  steps: ProgramStep[];
+}) {
   return (
-    <div className="relative">
-      <div className="absolute left-[27px] md:left-1/2 md:-translate-x-px top-2 bottom-2 w-px bg-gradient-to-b from-accent/0 via-accent/40 to-accent/0" />
-      <ol className="space-y-6">
+    <div className="bg-bg-elev/60 border border-line rounded-3xl p-6 sm:p-8 h-full">
+      {/* En-tete colonne */}
+      <div className="text-center mb-6 pb-6 border-b border-line">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-accent mb-1.5">{eyebrow}</p>
+        <h3 className="font-serif text-2xl font-bold mb-1.5">{title}</h3>
+        <p className="text-ink-muted text-xs">{subtitle}</p>
+      </div>
+
+      {/* Liste compacte avec ligne verticale */}
+      <ol className="relative space-y-3">
+        <div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-accent/30 via-accent/20 to-transparent" />
         {steps.map((step, i) => (
-          <FadeIn key={`${step.time}-${i}`} delay={i * 60}>
-            <li className={`relative grid md:grid-cols-2 gap-6 md:gap-12 items-center ${i % 2 ? "md:[&>*:first-child]:order-2" : ""}`}>
-              <div className={`md:text-${i % 2 ? "left" : "right"}`}>
-                <p className="font-mono text-accent text-sm tracking-widest mb-1">{step.time}</p>
-                <h4 className="font-serif text-xl font-bold mb-2">{step.title}</h4>
-                <p className="text-ink-muted text-sm">{step.desc}</p>
-              </div>
-              <div className="relative pl-16 md:pl-0">
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-full bg-bg-elev border-2 border-accent/40 shadow-glow">
-                  <step.icon size={22} className="text-accent-bright" />
-                </div>
-              </div>
-            </li>
-          </FadeIn>
+          <li key={`${step.time}-${i}`} className="relative flex items-start gap-3 group">
+            {/* Pastille avec icone */}
+            <div className="relative z-10 shrink-0 w-10 h-10 grid place-items-center rounded-full bg-bg-elev border border-accent/40 transition group-hover:border-accent group-hover:shadow-glow">
+              <step.icon size={15} className="text-accent-bright" />
+            </div>
+            {/* Texte */}
+            <div className="flex-1 pt-1.5 pb-1">
+              <p className="font-mono text-[11px] text-accent tracking-wider mb-0.5">{step.time}</p>
+              <h4 className="font-semibold text-sm leading-tight mb-0.5">{step.title}</h4>
+              <p className="text-ink-muted text-xs leading-snug">{step.desc}</p>
+            </div>
+          </li>
         ))}
       </ol>
     </div>
