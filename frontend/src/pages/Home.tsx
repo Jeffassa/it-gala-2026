@@ -37,7 +37,7 @@ const PROGRAM_STEPS = [
 ];
 
 const STATS = [
-  { value: "+500", label: "Invités attendus" },
+  { value: "+200", label: "Invités attendus" },
   { value: "6", label: "Catégories à départager" },
   { value: "+20", label: "Nominés en lice" },
   { value: "1", label: "Soirée mémorable" },
@@ -153,18 +153,20 @@ export default function HomePage() {
         <div className="relative w-full max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <FadeIn>
             <h1 className="font-serif font-bold leading-[0.95] mb-5 text-balance mx-auto" style={{ fontSize: "clamp(2.6rem, 7vw, 5.6rem)" }}>
-              <span className="block">La nuit où la</span>
-              <span className="block primary-text">tech ivoirienne</span>
-              <span className="block">se met en lumière.</span>
+              <span className="block">A Night </span>
+              <span className="block primary-text">To Shine</span>
+              <span className="block">Behind The Mask.</span>
             </h1>
             <p className="font-serif italic text-accent text-xl mb-4">« {gala?.theme ?? "L'innovation au cœur de l'excellence"} »</p>
             <p className="text-ink-muted text-lg max-w-2xl mx-auto mb-9">
               Le <strong className="text-ink">IT Gala</strong> célèbre les talents qui façonnent le numérique de demain.
-              Étudiants, alumni, créateurs et innovateurs : une soirée pour reconnaître les meilleurs et inspirer la suite.
+              Étudiants, alumni, créateurs et innovateurs : une soirée pour reconnaître les meilleurs et inspirer la suite;
+              UNE SOIRÉE D’EXCELLENCE, DE NETWORKING ET DE CÉLÉBRATION
+
             </p>
             <div className="flex gap-3 flex-wrap justify-center mb-12">
               <Link to="/login" className="btn btn-primary btn-lg">
-                Mon espace de vote <ArrowRight size={18} />
+                Mon espace <ArrowRight size={18} />
               </Link>
               <a href="#programme" className="btn btn-ghost btn-lg">
                 Découvrir le programme
@@ -367,7 +369,7 @@ export default function HomePage() {
                   <p className="font-serif text-5xl font-black mb-1 accent-text leading-none">{t.price}</p>
                   <p className="text-xs text-ink-muted mb-5">FCFA</p>
                   <p className="text-ink-muted text-sm mb-6">{t.desc}</p>
-                  <ul className="space-y-2.5 mb-7">
+                  <ul className="space-y-2.5">
                     {t.perks.map((p) => (
                       <li key={p} className="flex items-start gap-2.5 text-sm">
                         <Check size={16} className="text-accent mt-0.5 shrink-0" />
@@ -375,9 +377,6 @@ export default function HomePage() {
                       </li>
                     ))}
                   </ul>
-                  <Link to="/login" className={`btn w-full ${t.featured ? "btn-accent" : "btn-secondary"}`}>
-                    Je veux ce ticket <ArrowRight size={16} />
-                  </Link>
                 </div>
               </FadeIn>
             ))}
@@ -435,7 +434,7 @@ export default function HomePage() {
           </FadeIn>
 
           <FadeIn className="flex gap-3 justify-center flex-wrap">
-            <a href={gala?.tiktok_url ?? "https://tiktok.com/@itgala"} target="_blank" rel="noreferrer" className="btn btn-ghost">
+            <a href={gala?.tiktok_url ?? "https://tiktok.com/esaticstudents"} target="_blank" rel="noreferrer" className="btn btn-ghost">
               <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
               TikTok officiel <ArrowUpRight size={14} />
             </a>
@@ -458,7 +457,7 @@ export default function HomePage() {
             <p className="font-serif italic text-2xl md:text-3xl leading-relaxed mb-6 text-balance">
               « Le IT Gala, c'est cette soirée où on se rappelle pourquoi on aime la tech. On y rit, on y rêve, et on y prend rendez-vous avec l'avenir. »
             </p>
-            <p className="text-ink-muted text-sm uppercase tracking-[0.2em]">— Lauréat·e édition précédente</p>
+            <p className="text-ink-muted text-sm uppercase tracking-[0.2em]">— Un lauréat de l'édition précédente</p>
           </FadeIn>
         </div>
       </section>
