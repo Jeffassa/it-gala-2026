@@ -9,6 +9,15 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 720
     DATABASE_URL: str = "postgresql+psycopg://gala:gala@localhost:5432/gala"
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
+    CORS_ORIGIN_REGEX: str = (
+        r"^https?://("
+        r"localhost|"
+        r"127\.0\.0\.1|"
+        r"10(?:\.\d{1,3}){3}|"
+        r"192\.168(?:\.\d{1,3}){2}|"
+        r"172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2}"
+        r")(?::\d+)?$"
+    )
 
     MAIL_FROM: str = "onboarding@resend.dev"
     MAIL_FROM_NAME: str = "IT Gala 2026"
