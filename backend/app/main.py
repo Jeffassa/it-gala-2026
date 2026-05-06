@@ -38,6 +38,25 @@ def _ensure_columns() -> None:
                     "ALTER TABLE students ADD COLUMN gender VARCHAR(1) DEFAULT NULL"
                 ))
 
+    if "tickets" in insp.get_table_names():
+        ticket_cols = {c["name"] for c in insp.get_columns("tickets")}
+        if "max_scans" not in ticket_cols:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE tickets ADD COLUMN max_scans INTEGER DEFAULT 1"
+                ))
+        if "scan_count" not in ticket_cols:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE tickets ADD COLUMN scan_count INTEGER DEFAULT 0"
+                ))
+        if "attendees" not in ticket_cols:
+            with engine.begin() as conn:
+                # JSON works on SQLite, Postgres (JSON), MySQL 5.7+
+                conn.execute(text(
+                    "ALTER TABLE tickets ADD COLUMN attendees JSON DEFAULT NULL"
+                ))
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
