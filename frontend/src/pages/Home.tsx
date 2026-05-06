@@ -175,32 +175,6 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          <FadeIn delay={150}>
-            <div className="relative max-w-2xl mx-auto">
-              <div className="bg-bg-elev/80 backdrop-blur-xl border border-line rounded-3xl p-6 sm:p-8 shadow-elev">
-                <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5 flex items-center gap-2 justify-center">
-                  <Calendar size={14} /> Compte à rebours
-                </p>
-                {gala ? <Countdown target={gala.event_date} /> : <Countdown target="2026-06-06T19:00:00" />}
-                <div className="mt-7 pt-6 border-t border-line grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Date</p>
-                    <p className="font-semibold text-sm">{gala ? formatDate(gala.event_date) : "06 juin 2026"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Lieu</p>
-                    <p className="font-semibold text-sm">{gala?.location.split(",")[0] ?? "Palais de la Culture"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Tenue</p>
-                    <p className="font-semibold text-sm">Rouge bordeaux, or rosé et noir</p>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -top-6 -right-6 w-32 h-32 bg-accent/20 blur-3xl rounded-full -z-10" />
-              <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-primary/30 blur-3xl rounded-full -z-10" />
-            </div>
-          </FadeIn>
         </div>
 
       </section>
@@ -533,6 +507,46 @@ export default function HomePage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Countdown */}
+      <section id="countdown" className="py-24 bg-bg-elev/40 border-y border-line">
+        <div className="max-w-3xl mx-auto px-6">
+          <FadeIn className="text-center mb-10">
+            <span className="section-eyebrow">Plus que quelques jours</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold mb-3 text-balance">
+              Le grand soir <span className="primary-text">approche</span>.
+            </h2>
+            <p className="text-ink-muted">Préparez-vous, le rideau est sur le point de se lever.</p>
+          </FadeIn>
+
+          <FadeIn delay={150}>
+            <div className="relative max-w-2xl mx-auto">
+              <div className="bg-bg-elev/80 backdrop-blur-xl border border-line rounded-3xl p-6 sm:p-8 shadow-elev">
+                <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5 flex items-center gap-2 justify-center">
+                  <Calendar size={14} /> Compte à rebours
+                </p>
+                {gala ? <Countdown target={gala.event_date} /> : <Countdown target="2026-06-06T19:00:00" />}
+                <div className="mt-7 pt-6 border-t border-line grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Date</p>
+                    <p className="font-semibold text-sm">{gala ? formatDate(gala.event_date) : "06 juin 2026"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Lieu</p>
+                    <p className="font-semibold text-sm">{gala?.location.split(",")[0] ?? "Palais de la Culture"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Tenue</p>
+                    <p className="font-semibold text-sm">Rouge bordeaux, or rosé et noir</p>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -top-6 -right-6 w-32 h-32 bg-accent/20 blur-3xl rounded-full -z-10" />
+              <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-primary/30 blur-3xl rounded-full -z-10" />
+            </div>
+          </FadeIn>
         </div>
       </section>
 
