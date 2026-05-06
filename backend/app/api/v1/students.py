@@ -3,15 +3,18 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import require_admin
+from app.core.deps import require_admin, require_cashier
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentImportResult, StudentOut, StudentUpdate
 from app.services.students_import import import_students_from_xlsx
 
-router = APIRouter(prefix="/students", tags=["students"], dependencies=[Depends(require_admin)])
+# NOTE: lectures (search/list/promotions/classes) accessibles a admin + cashier,
+# car la caisse a besoin de chercher les etudiants pour creer un ticket.
+# Les ecritures (create/update/delete/import) restent reservees aux admins.
+router = APIRouter(prefix="/students", tags=["students"])
 
 
-@router.get("", response_model=list[StudentOut])
+@router.get("", response_model=list[StudentOut], dependencies=[Depends(require_cashier)])
 def list_students(
     db: Session = Depends(get_db),
     q: str | None = Query(None),
@@ -34,18 +37,18 @@ def list_students(
     return [StudentOut.model_validate(s) for s in db.scalars(stmt).all()]
 
 
-@router.get("/promotions", response_model=list[str])
+@router.get("/promotions", response_model=list[str], dependencies=[Depends(require_cashier)])
 def list_promotions(db: Session = Depends(get_db)) -> list[str]:
     rows = db.execute(select(Student.promotion).distinct().order_by(Student.promotion)).all()
     return [r[0] for r in rows if r[0]]
 
-@router.get("/classes", response_model=list[str])
+@router.get("/classes", response_model=list[str], dependencies=[Depends(require_cashier)])
 def list_classes(db: Session = Depends(get_db)) -> list[str]:
     rows = db.execute(select(Student.classe).distinct().where(Student.classe.is_not(None)).order_by(Student.classe)).all()
     return [r[0] for r in rows if r[0]]
 
 
-@router.post("", response_model=StudentOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=StudentOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
 def create_student(payload: StudentCreate, db: Session = Depends(get_db)) -> StudentOut:
     if db.scalar(select(Student).where(Student.matricule == payload.matricule)):
         raise HTTPException(status_code=400, detail="Matricule déjà enregistré")
@@ -56,7 +59,7 @@ def create_student(payload: StudentCreate, db: Session = Depends(get_db)) -> Stu
     return StudentOut.model_validate(s)
 
 
-@router.patch("/{student_id}", response_model=StudentOut)
+@router.patch("/{student_id}", response_model=StudentOut, dependencies=[Depends(require_admin)])
 def update_student(student_id: int, payload: StudentUpdate, db: Session = Depends(get_db)) -> StudentOut:
     s = db.get(Student, student_id)
     if s is None:
@@ -68,7 +71,7 @@ def update_student(student_id: int, payload: StudentUpdate, db: Session = Depend
     return StudentOut.model_validate(s)
 
 
-@router.delete("/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{student_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
 def delete_student(student_id: int, db: Session = Depends(get_db)) -> None:
     s = db.get(Student, student_id)
     if s is None:
@@ -77,7 +80,7 @@ def delete_student(student_id: int, db: Session = Depends(get_db)) -> None:
     db.commit()
 
 
-@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
 def delete_all(db: Session = Depends(get_db), promotion: str | None = Query(None), classe: str | None = Query(None)) -> None:
     """Bulk delete — optionally filtered by promotion and classe."""
     stmt = select(Student)
@@ -90,7 +93,7 @@ def delete_all(db: Session = Depends(get_db), promotion: str | None = Query(None
     db.commit()
 
 
-@router.post("/import", response_model=StudentImportResult)
+@router.post("/import", response_model=StudentImportResult, dependencies=[Depends(require_admin)])
 async def import_students(
     file: UploadFile = File(...),
     promotion: str | None = Query(None, description="Promotion par défaut si la colonne est absente du fichier"),
