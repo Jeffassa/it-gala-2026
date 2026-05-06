@@ -1,5 +1,6 @@
-import { Crown, Gem, GraduationCap, Heart, Radio, Rocket, Smartphone, Smile, Trophy } from "lucide-react";
+import { ArrowLeft, Crown, Gem, GraduationCap, Heart, Radio, Rocket, Smartphone, Smile, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Countdown } from "@/components/Countdown";
 import { liveApi } from "@/lib/api";
@@ -53,9 +54,18 @@ export default function LivePage() {
       >
         <div className="absolute inset-0 glow-grid opacity-50" />
         <div className="relative max-w-xl px-8">
-          <p className="text-xs uppercase tracking-[0.4em] text-accent mb-4 inline-flex items-center gap-2">
-            <Radio size={14} className="animate-pulse" /> Grand écran · En attente
-          </p>
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <Link 
+              to="/" 
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-line bg-bg-elev/50 text-ink-muted hover:text-white hover:border-accent transition-all"
+              title="Retour à l'accueil"
+            >
+              <ArrowLeft size={18} />
+            </Link>
+            <p className="text-xs uppercase tracking-[0.4em] text-accent inline-flex items-center gap-2">
+              <Radio size={14} className="animate-pulse" /> Grand écran · En attente
+            </p>
+          </div>
           <h1 className="font-serif text-4xl xl:text-6xl font-black mb-4">
             <span className="primary-text">{data.gala.name}</span> {data.gala.edition_year}
           </h1>
@@ -87,9 +97,18 @@ export default function LivePage() {
 
       <header className="relative max-w-[1800px] mx-auto px-10 py-8 flex items-center justify-between flex-wrap gap-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.4em] text-accent mb-2 inline-flex items-center gap-2">
-            <Radio size={14} className="animate-pulse" /> Grand écran · Direct
-          </p>
+          <div className="flex items-center gap-4 mb-4">
+            <Link 
+              to="/" 
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-line bg-bg-elev/50 text-ink-muted hover:text-white hover:border-accent transition-all"
+              title="Retour à l'accueil"
+            >
+              <ArrowLeft size={18} />
+            </Link>
+            <p className="text-xs uppercase tracking-[0.4em] text-accent inline-flex items-center gap-2">
+              <Radio size={14} className="animate-pulse" /> Grand écran · Direct
+            </p>
+          </div>
           <h1 className="font-serif text-5xl xl:text-6xl font-black">
             <span className="primary-text">{data.gala.name}</span> {data.gala.edition_year}
           </h1>

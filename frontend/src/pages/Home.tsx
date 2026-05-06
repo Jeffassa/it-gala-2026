@@ -191,8 +191,8 @@ export default function HomePage() {
                     <p className="font-semibold text-sm">{gala?.location.split(",")[0] ?? "Palais de la Culture"}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Tenue</p>
-                    <p className="font-semibold text-sm">Black Tie</p>
+                    <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-1">Dress code</p>
+                    <p className="font-semibold text-sm">Rouge bordeau, or rosé et noir</p>
                   </div>
                 </div>
               </div>
