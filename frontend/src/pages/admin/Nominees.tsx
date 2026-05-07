@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Empty } from "@/components/Empty";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
+import { StudentAutocomplete } from "@/components/StudentAutocomplete";
 import { apiError, assetUrl, categoryApi, galaApi, nomineeApi } from "@/lib/api";
 import type { Category, Gala, Nominee } from "@/lib/types";
 import { toast } from "@/store/toast";
@@ -164,7 +165,24 @@ function NomineeForm({ open, onClose, initial, categoryId, onSaved }: { open: bo
     <Modal open={open} onClose={onClose} size="lg" title={initial ? "Modifier le nominé" : "Nouveau nominé"}>
       <form onSubmit={submit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="label">Nom complet</label><input className="input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div>
+            <label className="label">Nom complet</label>
+            <StudentAutocomplete
+              value={form.name}
+              onChange={(v) => setForm({ ...form, name: v })}
+              onPick={(s) => setForm({
+                ...form,
+                name: s.full_name,
+                school_promotion: s.promotion ?? form.school_promotion,
+                contact_email: s.email ?? form.contact_email,
+              })}
+              placeholder="Tapez le nom (auto-completion ESATIC)…"
+              required
+            />
+            <p className="text-[11px] text-ink-faint mt-1">
+              Saisissez 2+ caractères : suggestions filtrées sur la liste ESATIC.
+            </p>
+          </div>
           <div>
             <label className="label">Promotion / École <span className="text-ink-faint normal-case tracking-normal">(optionnel)</span></label>
             <select className="input" value={form.school_promotion} onChange={(e) => setForm({ ...form, school_promotion: e.target.value })}>

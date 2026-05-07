@@ -6,10 +6,11 @@ import { AppHeader } from "@/components/AppHeader";
 import { Empty } from "@/components/Empty";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
+import { StudentAutocomplete } from "@/components/StudentAutocomplete";
 import { TicketQR } from "@/components/TicketQR";
-import { apiError, galaApi, studentApi, ticketApi } from "@/lib/api";
+import { apiError, galaApi, ticketApi } from "@/lib/api";
 import { formatDateTime, formatMoney, ticketTypeLabel } from "@/lib/format";
-import type { AttendeeStatus, Gala, Student, Ticket, TicketType } from "@/lib/types";
+import type { AttendeeStatus, Gala, Ticket, TicketType } from "@/lib/types";
 import { toast } from "@/store/toast";
 
 const PRICE_TABLE: Record<TicketType, number> = {
@@ -286,119 +287,53 @@ function SellModal({ type, gala, onClose, onSold }: { type: TicketType | null; g
   );
 }
 
-function AttendeeForm({ data, onChange, requireEmail }: { 
-  data: { full_name: string; email: string; phone: string }; 
+function AttendeeForm({ data, onChange, requireEmail }: {
+  data: { full_name: string; email: string; phone: string };
   onChange: (d: { full_name: string; email: string; phone: string }) => void;
   requireEmail?: boolean;
 }) {
-  const [pickedStudent, setPickedStudent] = useState<Student | null>(null);
-  const [studentQuery, setStudentQuery] = useState("");
-  const [studentResults, setStudentResults] = useState<Student[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [manualMode, setManualMode] = useState(false);
-
-  useEffect(() => {
-    if (manualMode || pickedStudent) return;
-    if (!studentQuery.trim()) {
-      setStudentResults([]);
-      return;
-    }
-    const handle = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const res = await studentApi.list({ q: studentQuery.trim(), limit: 12 });
-        setStudentResults(res);
-      } catch { /* silent */ }
-      finally { setSearching(false); }
-    }, 250);
-    return () => clearTimeout(handle);
-  }, [studentQuery, manualMode, pickedStudent]);
-
-  function selectStudent(s: Student) {
-    setPickedStudent(s);
-    onChange({
-      full_name: s.full_name,
-      email: s.email ?? "",
-      phone: s.phone ?? "",
-    });
-    setStudentResults([]);
-    setStudentQuery("");
-  }
-
   return (
-    <div className="space-y-4">
-      {!manualMode && !pickedStudent && (
-        <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint" />
-          <input
-            className="input pl-10 text-sm"
-            placeholder="Rechercher étudiant (matricule, nom...)"
-            value={studentQuery}
-            onChange={(e) => setStudentQuery(e.target.value)}
-          />
-          {searching && <div className="absolute right-3.5 top-1/2 -translate-y-1/2"><Spinner size={14} /></div>}
-          
-          {studentResults.length > 0 && (
-            <div className="mt-1 absolute z-10 w-full max-h-48 overflow-y-auto bg-bg-elev2 border border-line rounded-lg shadow-xl divide-y divide-line">
-              {studentResults.map((s) => (
-                <button
-                  type="button"
-                  key={s.id}
-                  onClick={() => selectStudent(s)}
-                  className="w-full text-left px-3 py-2 hover:bg-bg-elev3 transition flex items-center gap-2"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-sm truncate">{s.full_name}</p>
-                    <p className="text-xs text-ink-muted truncate">{s.matricule} {s.promotion ? `· ${s.promotion}` : ""}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {pickedStudent && (
-        <div className="bg-accent/10 border border-accent-soft/40 rounded-lg px-3 py-2 flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-sm">{pickedStudent.full_name}</p>
-            <p className="text-xs text-ink-muted">{pickedStudent.matricule}</p>
-          </div>
-          <button type="button" onClick={() => { setPickedStudent(null); onChange({ full_name: "", email: "", phone: "" }); }} className="btn btn-ghost btn-sm text-xs">
-            Changer
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center justify-end -mt-2">
-        {!manualMode && !pickedStudent && (
-          <button type="button" onClick={() => setManualMode(true)} className="text-xs text-ink-muted hover:text-accent">
-            Saisir manuellement
-          </button>
-        )}
-        {manualMode && (
-          <button type="button" onClick={() => { setManualMode(false); onChange({ full_name: "", email: "", phone: "" }); }} className="text-xs text-accent hover:underline">
-            Utiliser la recherche
-          </button>
-        )}
+    <div className="space-y-3">
+      <div>
+        <label className="text-xs text-ink-muted mb-1 block">Nom complet</label>
+        <StudentAutocomplete
+          value={data.full_name}
+          onChange={(v) => onChange({ ...data, full_name: v })}
+          onPick={(s) => onChange({
+            full_name: s.full_name,
+            email: s.email ?? data.email,
+            phone: s.phone ?? data.phone,
+          })}
+          placeholder="Tapez un nom, matricule ou classe…"
+          required
+          className="input text-sm py-1.5"
+        />
+        <p className="text-[11px] text-ink-faint mt-1">
+          Auto-complétion sur la liste ESATIC. Tapez librement pour un externe.
+        </p>
       </div>
-
-      {(manualMode || pickedStudent) && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="text-xs text-ink-muted mb-1 block">Nom complet</label>
-            <input className="input text-sm py-1.5" required value={data.full_name} onChange={(e) => onChange({ ...data, full_name: e.target.value })} readOnly={!!pickedStudent} />
-          </div>
-          <div>
-            <label className="text-xs text-ink-muted mb-1 block">Email {requireEmail ? "*" : "(optionnel)"}</label>
-            <input className="input text-sm py-1.5" type="email" required={requireEmail} value={data.email} onChange={(e) => onChange({ ...data, email: e.target.value })} />
-          </div>
-          <div>
-            <label className="text-xs text-ink-muted mb-1 block">Téléphone</label>
-            <input className="input text-sm py-1.5" value={data.phone} onChange={(e) => onChange({ ...data, phone: e.target.value })} />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs text-ink-muted mb-1 block">
+            Email {requireEmail ? <span className="text-red-400">*</span> : <span className="text-ink-faint">(optionnel)</span>}
+          </label>
+          <input
+            className="input text-sm py-1.5"
+            type="email"
+            required={requireEmail}
+            value={data.email}
+            onChange={(e) => onChange({ ...data, email: e.target.value })}
+          />
         </div>
-      )}
+        <div>
+          <label className="text-xs text-ink-muted mb-1 block">Téléphone</label>
+          <input
+            className="input text-sm py-1.5"
+            value={data.phone}
+            onChange={(e) => onChange({ ...data, phone: e.target.value })}
+          />
+        </div>
+      </div>
     </div>
   );
 }
