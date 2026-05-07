@@ -7,7 +7,7 @@ from fastapi import (
     UploadFile,
     status,
 )
-from sqlalchemy import or_, select
+from sqlalchemy import delete as sa_delete, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -147,13 +147,12 @@ def delete_all(
     classe: str | None = Query(None),
 ) -> None:
     """Bulk delete — optionally filtered by promotion and classe."""
-    stmt = select(Student)
+    stmt = sa_delete(Student)
     if promotion:
         stmt = stmt.where(Student.promotion == promotion)
     if classe:
         stmt = stmt.where(Student.classe == classe)
-    for s in db.scalars(stmt).all():
-        db.delete(s)
+    db.execute(stmt)
     db.commit()
 
 

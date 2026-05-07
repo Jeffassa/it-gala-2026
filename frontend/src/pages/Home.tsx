@@ -7,7 +7,7 @@ import {
   ArrowRight, ArrowUpRight, Award, Calendar, Camera, Check, ChevronRight,
   Crown, Drama, Gem, GraduationCap, Heart, MapPin, Menu, MonitorPlay,
   Music2, Plus, Quote, Rocket, Shirt, Smartphone, Smile, Sparkles, Star, Ticket,
-  Trophy, Users, Video, Vote, Wallet, X,
+  Trophy, Users, Video, Vote, X,
 } from "@/components/Icon";
 import { Logo } from "@/components/Logo";
 import { assetUrl, categoryApi, galaApi, souvenirApi } from "@/lib/api";
@@ -73,19 +73,6 @@ const PROGRAM_EVENING = [
   { time: "00h20 – 00h40", title: "Cérémonie des roses", desc: "Moment d'hommage.", icon: Heart },
   { time: "00h40 – 01h20", title: "Prestation d'artiste", desc: "Performance live.", icon: Music2 },
   { time: "01h20 – 02h00", title: "Bal poussière", desc: "Soirée dansante.", icon: Music2 },
-];
-
-const STATS = [
-  { value: "+200", label: "Invités attendus" },
-  { value: "13", label: "Catégories à départager" },
-  { value: "+20", label: "Nominés en lice" },
-  { value: "1", label: "Soirée mémorable" },
-];
-
-const VALUES = [
-  { icon: Award, title: "Excellence", desc: "Reconnaître les talents qui font avancer l'écosystème tech ivoirien." },
-  { icon: Sparkles, title: "Créativité", desc: "Célébrer celles et ceux qui osent, innovent et inspirent les générations futures." },
-  { icon: Users, title: "Communauté", desc: "Réunir étudiants, alumni, mentors et partenaires autour d'une cause commune." },
 ];
 
 const FAQ = [
@@ -197,12 +184,6 @@ export default function HomePage() {
               <span className="block">Behind The Mask.</span>
             </h1>
             <p className="font-serif italic text-accent text-xl mb-4">« Cette nuit, c'est ton moment de briller »</p>
-            {/* <p className="text-ink-muted text-lg max-w-2xl mx-auto mb-9">
-              Le <strong className="text-ink">IT Gala</strong> célèbre les talents qui façonnent le numérique de demain.
-              Étudiants, alumni, créateurs et innovateurs : une soirée pour reconnaître les meilleurs et inspirer la suite;
-              UNE SOIRÉE D’EXCELLENCE, DE NETWORKING ET DE CÉLÉBRATION
-
-            </p> */}
 
             <div className="flex gap-3 flex-wrap justify-center mb-12">
               <Link to="/login" className="btn btn-primary btn-lg">
@@ -217,18 +198,6 @@ export default function HomePage() {
         </div>
 
       </section>
-
-      {/* Stats */}
-      {/* <section className="py-20 border-y border-line bg-bg-elev/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {STATS.map((s, i) => (
-            <FadeIn key={s.label} delay={i * 80} className="text-center">
-              <p className="font-serif text-5xl md:text-6xl font-black accent-text leading-none mb-2">{s.value}</p>
-              <p className="text-xs uppercase tracking-[0.2em] text-ink-muted">{s.label}</p>
-            </FadeIn>
-          ))}
-        </div>
-      </section> */}
 
       {/* Countdown */}
       <section id="countdown" className="py-24 bg-bg-elev/40 border-y border-line">
@@ -294,15 +263,6 @@ export default function HomePage() {
             </div>
           </FadeIn>
           <FadeIn delay={150} className="grid sm:grid-cols-2 gap-4">
-            {/* {VALUES.map((v) => (
-              <div key={v.title} className="card hover:border-accent transition group">
-                <span className="icon-tile icon-tile-primary w-12 h-12 mb-4">
-                  <v.icon size={22} />
-                </span>
-                <h3 className="font-serif text-xl font-bold mb-2 group-hover:text-accent transition">{v.title}</h3>
-                <p className="text-ink-muted text-sm leading-relaxed">{v.desc}</p>
-              </div>
-            ))} */}
             <div className="sm:col-span-2 relative overflow-hidden rounded-2xl border border-primary-soft/40 bg-gradient-to-br from-primary/30 via-primary-deep/40 to-bg-elev p-7">
               <div className="absolute -top-12 -right-12 w-48 h-48 bg-accent/20 blur-3xl rounded-full" />
               <div className="relative flex items-center gap-4">
@@ -408,11 +368,6 @@ export default function HomePage() {
             ].map((t, i) => (
               <FadeIn key={t.type} delay={i * 100}>
                 <div className={`relative h-full rounded-2xl p-7 border transition hover:-translate-y-1 ${t.featured ? "border-accent bg-gradient-to-br from-accent/10 via-bg-elev to-bg-elev shadow-glow" : "border-line bg-bg-elev hover:border-accent/40"}`}>
-                  {/* {t.featured && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-accent text-bg text-[10px] font-bold tracking-widest">
-                      LE PLUS POPULAIRE
-                    </span>
-                  )} */}
                   <span className="icon-tile icon-tile-primary w-12 h-12 mb-5">
                     <t.icon size={22} />
                   </span>
@@ -493,9 +448,6 @@ export default function HomePage() {
               <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
               Page Instagram <ArrowUpRight size={14} />
             </a>
-            {/* <Link to="/live" className="btn btn-accent">
-              <MonitorPlay size={16} /> Suivre en direct
-            </Link> */}
           </FadeIn>
         </div>
       </section>
@@ -508,7 +460,6 @@ export default function HomePage() {
             <p className="font-serif italic text-2xl md:text-3xl leading-relaxed mb-6 text-balance">
               « Le IT Gala, c'est cette soirée où on se rappelle pourquoi on aime la tech. On y rit, on y rêve, et on y prend rendez-vous avec l'avenir. »
             </p>
-            {/* <p className="text-ink-muted text-sm uppercase tracking-[0.2em]">— Un lauréat de l'édition précédente</p> */}
           </FadeIn>
         </div>
       </section>

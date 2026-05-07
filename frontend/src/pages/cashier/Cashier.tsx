@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { Check, Edit3, GraduationCap, Heart, Mail, Search, Ticket as TicketIcon, User as UserIcon, Users, Wallet, X } from "lucide-react";
+import { Check, Heart, Mail, Search, Ticket as TicketIcon, User as UserIcon, Users, Wallet } from "lucide-react";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Empty } from "@/components/Empty";

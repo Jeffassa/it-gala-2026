@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 
@@ -11,7 +11,6 @@ import { toast } from "@/store/toast";
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
   const token = params.get("token") || "";
-  const nav = useNavigate();
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");

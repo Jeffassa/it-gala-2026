@@ -7,7 +7,6 @@ import { Empty } from "@/components/Empty";
 import { Modal } from "@/components/Modal";
 import { Spinner } from "@/components/Spinner";
 import { apiError, studentApi } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
 import type { Student, StudentImportResult } from "@/lib/types";
 import { toast } from "@/store/toast";
 

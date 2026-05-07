@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowRight, Eye, EyeOff, Lock, LogIn, Mail, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 
 import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
