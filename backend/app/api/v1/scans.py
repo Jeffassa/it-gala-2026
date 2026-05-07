@@ -24,7 +24,11 @@ def scan_ticket(
     if ticket is None:
         return ScanResult(ok=False, message="Ticket inconnu")
     if ticket.status == TicketStatus.CANCELLED:
-        return ScanResult(ok=False, message="Ticket annulé", ticket=TicketOut.model_validate(ticket))
+        return ScanResult(
+            ok=False,
+            message="Ticket annulé",
+            ticket=TicketOut.model_validate(ticket),
+        )
     if ticket.status == TicketStatus.SCANNED:
         return ScanResult(
             ok=False,
@@ -32,23 +36,27 @@ def scan_ticket(
             ticket=TicketOut.model_validate(ticket),
             already_scanned=True,
         )
-    
+
     # Ensure defaults for old records
-    if ticket.scan_count is None: ticket.scan_count = 0
-    if ticket.max_scans is None: ticket.max_scans = 1
+    if ticket.scan_count is None:
+        ticket.scan_count = 0
+    if ticket.max_scans is None:
+        ticket.max_scans = 1
 
     ticket.scan_count += 1
     if ticket.scan_count >= ticket.max_scans:
         ticket.status = TicketStatus.SCANNED
-        
+
     ticket.scanned_at = datetime.utcnow()
     ticket.scanned_by_id = current.id
     db.add(Scan(ticket_id=ticket.id, scanned_by_id=current.id))
     db.commit()
     db.refresh(ticket)
-    
+
     message = f"Ticket validé ✓ ({ticket.scan_count}/{ticket.max_scans})"
-    return ScanResult(ok=True, message=message, ticket=TicketOut.model_validate(ticket))
+    return ScanResult(
+        ok=True, message=message, ticket=TicketOut.model_validate(ticket)
+    )
 
 
 @router.get("/stats")
@@ -57,13 +65,42 @@ def scan_stats(
     current: User = Depends(require_controller),
 ) -> dict:
     total = db.scalar(select(func.count(Ticket.id))) or 0
-    scanned = db.scalar(select(func.count(Ticket.id)).where(Ticket.status == TicketStatus.SCANNED)) or 0
-    my_scans = db.scalar(select(func.count(Scan.id)).where(Scan.scanned_by_id == current.id)) or 0
+    scanned = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(
+                Ticket.status == TicketStatus.SCANNED
+            )
+        )
+        or 0
+    )
+    my_scans = (
+        db.scalar(
+            select(func.count(Scan.id)).where(Scan.scanned_by_id == current.id)
+        )
+        or 0
+    )
 
     # Stats par type
-    solo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)) or 0
-    duo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)) or 0
-    gbonhi = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.GBONHI)) or 0
+    solo = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)
+        )
+        or 0
+    )
+    duo = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)
+        )
+        or 0
+    )
+    gbonhi = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(
+                Ticket.type == TicketType.GBONHI
+            )
+        )
+        or 0
+    )
 
     return {
         "total_tickets": int(total),
@@ -74,7 +111,7 @@ def scan_stats(
             "solo": int(solo),
             "duo": int(duo),
             "gbonhi": int(gbonhi),
-        }
+        },
     }
 
 

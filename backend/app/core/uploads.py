@@ -3,18 +3,18 @@
 Whitelist d'extensions + verification du contenu via Pillow + limite de taille.
 Empeche l'upload de fichiers executables, SVG (XSS), ou PDF deguises en images.
 """
+
 from __future__ import annotations
 
 import io
 import os
-import shutil
-from typing import Iterable
 
 from fastapi import HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 
-
-ALLOWED_EXTENSIONS: frozenset[str] = frozenset({".jpg", ".jpeg", ".png", ".webp", ".gif"})
+ALLOWED_EXTENSIONS: frozenset[str] = frozenset(
+    {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+)
 ALLOWED_MIME_PREFIX: str = "image/"
 ALLOWED_PIL_FORMATS: frozenset[str] = frozenset({"JPEG", "PNG", "WEBP", "GIF"})
 
@@ -24,7 +24,9 @@ MAX_UPLOAD_SIZE_BYTES: int = 5 * 1024 * 1024  # 5 MB
 def _safe_extension(filename: str | None) -> str:
     """Renvoie une extension sure (`.jpg`, `.png`, etc.) ou leve 400."""
     if not filename:
-        raise HTTPException(status_code=400, detail="Fichier sans nom — refus.")
+        raise HTTPException(
+            status_code=400, detail="Fichier sans nom — refus."
+        )
     ext = os.path.splitext(filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(

@@ -2,6 +2,7 @@
 
 Generates an A4 landscape elegant certificate for a winner / nominee.
 """
+
 from __future__ import annotations
 
 import io
@@ -11,7 +12,6 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
-
 
 GOLD = colors.HexColor("#d4af37")
 GOLD_BRIGHT = colors.HexColor("#f5d76e")
@@ -44,15 +44,23 @@ def render_certificate(
     # Outer gold border
     c.setStrokeColor(GOLD)
     c.setLineWidth(2)
-    c.rect(15 * mm, 15 * mm, width - 30 * mm, height - 30 * mm, stroke=1, fill=0)
+    c.rect(
+        15 * mm, 15 * mm, width - 30 * mm, height - 30 * mm, stroke=1, fill=0
+    )
     # Inner thin border
     c.setLineWidth(0.5)
-    c.rect(20 * mm, 20 * mm, width - 40 * mm, height - 40 * mm, stroke=1, fill=0)
+    c.rect(
+        20 * mm, 20 * mm, width - 40 * mm, height - 40 * mm, stroke=1, fill=0
+    )
 
     # Decorative corners
     corner = 14 * mm
-    for x, y in [(20 * mm, 20 * mm), (width - 20 * mm, 20 * mm),
-                 (20 * mm, height - 20 * mm), (width - 20 * mm, height - 20 * mm)]:
+    for x, y in [
+        (20 * mm, 20 * mm),
+        (width - 20 * mm, 20 * mm),
+        (20 * mm, height - 20 * mm),
+        (width - 20 * mm, height - 20 * mm),
+    ]:
         c.setStrokeColor(GOLD_BRIGHT)
         c.setLineWidth(1.5)
         sx = -1 if x > width / 2 else 1
@@ -67,12 +75,16 @@ def render_certificate(
 
     c.setFillColor(GOLD)
     c.setFont("Helvetica", 8)
-    c.drawCentredString(width / 2, height - 44 * mm, f"ÉDITION {edition_year}".upper())
+    c.drawCentredString(
+        width / 2, height - 44 * mm, f"ÉDITION {edition_year}".upper()
+    )
 
     # Title
     c.setFillColor(GOLD_BRIGHT)
     c.setFont("Times-Bold", 36)
-    title = "CERTIFICAT DE LAURÉAT" if is_winner else "CERTIFICAT DE NOMINATION"
+    title = (
+        "CERTIFICAT DE LAURÉAT" if is_winner else "CERTIFICAT DE NOMINATION"
+    )
     c.drawCentredString(width / 2, height - 70 * mm, title)
 
     # Decorative gold line
@@ -116,7 +128,11 @@ def render_certificate(
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 9)
     footer_y = 40 * mm
-    c.drawCentredString(width / 2, footer_y + 6 * mm, f"{gala_name} — {event_date.strftime('%d %B %Y')}".upper())
+    c.drawCentredString(
+        width / 2,
+        footer_y + 6 * mm,
+        f"{gala_name} — {event_date.strftime('%d %B %Y')}".upper(),
+    )
     c.drawCentredString(width / 2, footer_y, location.upper())
 
     # Signature placeholders
@@ -128,7 +144,9 @@ def render_certificate(
     c.setFont("Helvetica-Oblique", 8)
     c.setFillColor(MUTED)
     c.drawCentredString(70 * mm, sig_y - 4 * mm, "Le Comité d'organisation")
-    c.drawCentredString(width - 70 * mm, sig_y - 4 * mm, "Le Président du Jury")
+    c.drawCentredString(
+        width - 70 * mm, sig_y - 4 * mm, "Le Président du Jury"
+    )
 
     c.showPage()
     c.save()

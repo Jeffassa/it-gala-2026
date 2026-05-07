@@ -9,7 +9,9 @@ from app.models.ticket import Ticket
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserOut, UserUpdate, UserWithSpend
 
-router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/users", tags=["users"], dependencies=[Depends(require_admin)]
+)
 
 
 @router.get("", response_model=list[UserWithSpend])
@@ -23,12 +25,21 @@ def list_users(db: Session = Depends(get_db)) -> list[UserWithSpend]:
             func.count(Ticket.id).label("cnt"),
         ).group_by(Ticket.buyer_email)
     ).all()
-    spend_map = {row.buyer_email: (float(row.total or 0), int(row.cnt or 0)) for row in spend_rows}
+    spend_map = {
+        row.buyer_email: (float(row.total or 0), int(row.cnt or 0))
+        for row in spend_rows
+    }
 
     out: list[UserWithSpend] = []
     for u in users:
         total, cnt = spend_map.get(u.email, (0.0, 0))
-        out.append(UserWithSpend(**UserOut.model_validate(u).model_dump(), total_spent=total, tickets_count=cnt))
+        out.append(
+            UserWithSpend(
+                **UserOut.model_validate(u).model_dump(),
+                total_spent=total,
+                tickets_count=cnt
+            )
+        )
     return out
 
 
@@ -50,7 +61,9 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserOut:
 
 
 @router.patch("/{user_id}", response_model=UserOut)
-def update_user(user_id: int, payload: UserUpdate, db: Session = Depends(get_db)) -> UserOut:
+def update_user(
+    user_id: int, payload: UserUpdate, db: Session = Depends(get_db)
+) -> UserOut:
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
@@ -92,6 +105,8 @@ def delete_user(user_id: int, db: Session = Depends(get_db)) -> None:
     if user is None:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
     if user.role == UserRole.SUPER_ADMIN:
-        raise HTTPException(status_code=400, detail="Impossible de supprimer un super admin")
+        raise HTTPException(
+            status_code=400, detail="Impossible de supprimer un super admin"
+        )
     db.delete(user)
     db.commit()

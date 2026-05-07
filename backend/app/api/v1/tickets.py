@@ -59,7 +59,13 @@ def create_ticket(
         if payload.attendees:
             for attendee in payload.attendees:
                 if attendee.email:
-                    send_ticket_email(db, ticket, gala, recipient_name=attendee.full_name, recipient_email=attendee.email)
+                    send_ticket_email(
+                        db,
+                        ticket,
+                        gala,
+                        recipient_name=attendee.full_name,
+                        recipient_email=attendee.email,
+                    )
         else:
             send_ticket_email(db, ticket, gala)
 
@@ -73,9 +79,27 @@ def ticket_stats(
 ) -> dict:
     from sqlalchemy import func
     from app.models.ticket import TicketType
-    solo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)) or 0
-    duo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)) or 0
-    gbonhi = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.GBONHI)) or 0
+
+    solo = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)
+        )
+        or 0
+    )
+    duo = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)
+        )
+        or 0
+    )
+    gbonhi = (
+        db.scalar(
+            select(func.count(Ticket.id)).where(
+                Ticket.type == TicketType.GBONHI
+            )
+        )
+        or 0
+    )
     return {
         "solo": int(solo),
         "duo": int(duo),

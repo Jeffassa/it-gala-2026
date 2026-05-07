@@ -5,7 +5,11 @@ from app.models.category import Category
 from app.models.nominee import Nominee
 from app.models.vote import Vote
 from app.models.scan import Scan
-from app.models.notification import Notification, NotificationChannel, NotificationStatus
+from app.models.notification import (
+    Notification,
+    NotificationChannel,
+    NotificationStatus,
+)
 from app.models.student import Student
 from app.models.password_reset import PasswordResetToken
 from app.models.souvenir import Souvenir

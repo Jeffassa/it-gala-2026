@@ -7,7 +7,12 @@ from app.core.deps import require_admin
 from app.models.category import Category
 from app.models.nominee import Nominee
 from app.models.vote import Vote
-from app.schemas.category import CategoryCreate, CategoryOut, CategoryUpdate, CategoryWithStats
+from app.schemas.category import (
+    CategoryCreate,
+    CategoryOut,
+    CategoryUpdate,
+    CategoryWithStats,
+)
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -23,10 +28,18 @@ def list_categories(
     cats = db.scalars(stmt).all()
 
     nom_counts = dict(
-        db.execute(select(Nominee.category_id, func.count(Nominee.id)).group_by(Nominee.category_id)).all()
+        db.execute(
+            select(Nominee.category_id, func.count(Nominee.id)).group_by(
+                Nominee.category_id
+            )
+        ).all()
     )
     vote_counts = dict(
-        db.execute(select(Vote.category_id, func.count(Vote.id)).group_by(Vote.category_id)).all()
+        db.execute(
+            select(Vote.category_id, func.count(Vote.id)).group_by(
+                Vote.category_id
+            )
+        ).all()
     )
 
     return [
@@ -39,8 +52,15 @@ def list_categories(
     ]
 
 
-@router.post("", response_model=CategoryOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
-def create_category(payload: CategoryCreate, db: Session = Depends(get_db)) -> CategoryOut:
+@router.post(
+    "",
+    response_model=CategoryOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
+def create_category(
+    payload: CategoryCreate, db: Session = Depends(get_db)
+) -> CategoryOut:
     c = Category(**payload.model_dump())
     db.add(c)
     db.commit()
@@ -48,8 +68,14 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db)) -> C
     return CategoryOut.model_validate(c)
 
 
-@router.patch("/{cat_id}", response_model=CategoryOut, dependencies=[Depends(require_admin)])
-def update_category(cat_id: int, payload: CategoryUpdate, db: Session = Depends(get_db)) -> CategoryOut:
+@router.patch(
+    "/{cat_id}",
+    response_model=CategoryOut,
+    dependencies=[Depends(require_admin)],
+)
+def update_category(
+    cat_id: int, payload: CategoryUpdate, db: Session = Depends(get_db)
+) -> CategoryOut:
     c = db.get(Category, cat_id)
     if c is None:
         raise HTTPException(status_code=404, detail="Catégorie introuvable")
@@ -60,7 +86,11 @@ def update_category(cat_id: int, payload: CategoryUpdate, db: Session = Depends(
     return CategoryOut.model_validate(c)
 
 
-@router.delete("/{cat_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
+@router.delete(
+    "/{cat_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_admin)],
+)
 def delete_category(cat_id: int, db: Session = Depends(get_db)) -> None:
     c = db.get(Category, cat_id)
     if c is None:

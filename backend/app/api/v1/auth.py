@@ -11,7 +11,11 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.limiter import limiter
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import (
+    create_access_token,
+    hash_password,
+    verify_password,
+)
 from app.models.password_reset import PasswordResetToken
 from app.models.user import User, UserRole
 from app.schemas.auth import (
@@ -31,10 +35,15 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=TokenResponse)
 @limiter.limit("5/hour")
-def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def register(
+    request: Request, payload: RegisterRequest, db: Session = Depends(get_db)
+) -> TokenResponse:
     existing = db.scalar(select(User).where(User.email == payload.email))
     if existing:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email déjà utilisé")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email déjà utilisé",
+        )
     user = User(
         full_name=payload.full_name,
         email=payload.email,
@@ -45,22 +54,32 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
     db.add(user)
     db.commit()
     db.refresh(user)
-    token = create_access_token(user.id, user.role if isinstance(user.role, str) else user.role.value)
+    token = create_access_token(
+        user.id, user.role if isinstance(user.role, str) else user.role.value
+    )
     return TokenResponse(access_token=token, user=UserOut.model_validate(user))
 
 
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("10/minute")
-def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def login(
+    request: Request, payload: LoginRequest, db: Session = Depends(get_db)
+) -> TokenResponse:
     user = db.scalar(select(User).where(User.email == payload.email))
-    if user is None or not verify_password(payload.password, user.hashed_password):
+    if user is None or not verify_password(
+        payload.password, user.hashed_password
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect",
         )
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Compte désactivé")
-    token = create_access_token(user.id, user.role if isinstance(user.role, str) else user.role.value)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Compte désactivé"
+        )
+    token = create_access_token(
+        user.id, user.role if isinstance(user.role, str) else user.role.value
+    )
     return TokenResponse(access_token=token, user=UserOut.model_validate(user))
 
 
@@ -129,7 +148,11 @@ _GENERIC_FORGOT_RESPONSE = {
 
 @router.post("/forgot-password")
 @limiter.limit("3/minute")
-def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)) -> dict:
+def forgot_password(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+) -> dict:
     """Send a password reset email if the account exists.
 
     Always returns 200 with a generic message to prevent email enumeration.
@@ -172,30 +195,47 @@ def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Sessio
         )
     except Exception:
         # send_email already records a failed Notification row; log here for ops.
-        logger.exception("Password reset email dispatch raised for user_id=%s", user.id)
+        logger.exception(
+            "Password reset email dispatch raised for user_id=%s", user.id
+        )
 
     return _GENERIC_FORGOT_RESPONSE
 
 
 @router.post("/reset-password")
 @limiter.limit("10/hour")
-def reset_password(request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
+def reset_password(
+    request: Request,
+    payload: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+) -> dict:
     """Reset the user's password using a valid token."""
     reset_token = db.scalar(
-        select(PasswordResetToken).where(PasswordResetToken.token == payload.token)
+        select(PasswordResetToken).where(
+            PasswordResetToken.token == payload.token
+        )
     )
     if reset_token is None or reset_token.used:
-        raise HTTPException(status_code=400, detail="Lien invalide ou déjà utilisé")
+        raise HTTPException(
+            status_code=400, detail="Lien invalide ou déjà utilisé"
+        )
 
     if reset_token.expires_at < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Ce lien a expiré. Veuillez refaire une demande.")
+        raise HTTPException(
+            status_code=400,
+            detail="Ce lien a expiré. Veuillez refaire une demande.",
+        )
 
     user = db.get(User, reset_token.user_id)
     if user is None or not user.is_active:
-        raise HTTPException(status_code=400, detail="Compte introuvable ou désactivé")
+        raise HTTPException(
+            status_code=400, detail="Compte introuvable ou désactivé"
+        )
 
     user.hashed_password = hash_password(payload.new_password)
     reset_token.used = True
     db.commit()
 
-    return {"message": "Mot de passe modifié avec succès. Vous pouvez maintenant vous connecter."}
+    return {
+        "message": "Mot de passe modifié avec succès. Vous pouvez maintenant vous connecter."
+    }

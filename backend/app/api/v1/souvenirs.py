@@ -1,4 +1,12 @@
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -23,8 +31,15 @@ def list_souvenirs(
     return list(db.scalars(stmt).all())
 
 
-@router.post("", response_model=SouvenirOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
-def create_souvenir(payload: SouvenirCreate, db: Session = Depends(get_db)) -> Souvenir:
+@router.post(
+    "",
+    response_model=SouvenirOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
+def create_souvenir(
+    payload: SouvenirCreate, db: Session = Depends(get_db)
+) -> Souvenir:
     s = Souvenir(**payload.model_dump())
     db.add(s)
     db.commit()
@@ -32,8 +47,14 @@ def create_souvenir(payload: SouvenirCreate, db: Session = Depends(get_db)) -> S
     return s
 
 
-@router.patch("/{souvenir_id}", response_model=SouvenirOut, dependencies=[Depends(require_admin)])
-def update_souvenir(souvenir_id: int, payload: SouvenirUpdate, db: Session = Depends(get_db)) -> Souvenir:
+@router.patch(
+    "/{souvenir_id}",
+    response_model=SouvenirOut,
+    dependencies=[Depends(require_admin)],
+)
+def update_souvenir(
+    souvenir_id: int, payload: SouvenirUpdate, db: Session = Depends(get_db)
+) -> Souvenir:
     s = db.get(Souvenir, souvenir_id)
     if s is None:
         raise HTTPException(status_code=404, detail="Souvenir introuvable")
@@ -44,7 +65,11 @@ def update_souvenir(souvenir_id: int, payload: SouvenirUpdate, db: Session = Dep
     return s
 
 
-@router.delete("/{souvenir_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
+@router.delete(
+    "/{souvenir_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_admin)],
+)
 def delete_souvenir(souvenir_id: int, db: Session = Depends(get_db)) -> None:
     s = db.get(Souvenir, souvenir_id)
     if s is None:
@@ -53,7 +78,11 @@ def delete_souvenir(souvenir_id: int, db: Session = Depends(get_db)) -> None:
     db.commit()
 
 
-@router.post("/{souvenir_id}/photo", response_model=SouvenirOut, dependencies=[Depends(require_admin)])
+@router.post(
+    "/{souvenir_id}/photo",
+    response_model=SouvenirOut,
+    dependencies=[Depends(require_admin)],
+)
 def upload_souvenir_photo(
     souvenir_id: int,
     file: UploadFile = File(...),
@@ -63,7 +92,9 @@ def upload_souvenir_photo(
     if s is None:
         raise HTTPException(status_code=404, detail="Souvenir introuvable")
 
-    _, filename = save_image_upload(file, target_dir="uploads/souvenirs", base_name=s.id)
+    _, filename = save_image_upload(
+        file, target_dir="uploads/souvenirs", base_name=s.id
+    )
     s.image_url = f"/uploads/souvenirs/{filename}"
     db.commit()
     db.refresh(s)

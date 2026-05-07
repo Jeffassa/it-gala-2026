@@ -1,4 +1,5 @@
 """Audit endpoints — exhaustive scan log for litigation handling."""
+
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
@@ -12,7 +13,9 @@ from app.models.scan import Scan
 from app.models.ticket import Ticket
 from app.models.user import User
 
-router = APIRouter(prefix="/audit", tags=["audit"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/audit", tags=["audit"], dependencies=[Depends(require_admin)]
+)
 
 
 class ScanLogEntry(BaseModel):

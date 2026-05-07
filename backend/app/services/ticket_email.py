@@ -1,4 +1,5 @@
 """Send the ticket to the buyer by email with a styled HTML template + inline QR code."""
+
 from __future__ import annotations
 
 import io
@@ -10,7 +11,6 @@ from sqlalchemy.orm import Session
 from app.models.gala import Gala
 from app.models.ticket import Ticket
 from app.services.email import send_email
-
 
 TYPE_LABEL = {"solo": "Solo", "duo": "Duo", "gbonhi": "Gbonhi"}
 
@@ -30,12 +30,26 @@ def _format_money(value: float) -> str:
 
 
 def _format_date(d: datetime) -> str:
-    months = ["janvier", "février", "mars", "avril", "mai", "juin",
-              "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+    months = [
+        "janvier",
+        "février",
+        "mars",
+        "avril",
+        "mai",
+        "juin",
+        "juillet",
+        "août",
+        "septembre",
+        "octobre",
+        "novembre",
+        "décembre",
+    ]
     return f"{d.day} {months[d.month - 1]} {d.year}"
 
 
-def build_ticket_email_html(ticket: Ticket, gala: Gala, recipient_name: str | None = None) -> str:
+def build_ticket_email_html(
+    ticket: Ticket, gala: Gala, recipient_name: str | None = None
+) -> str:
     name_to_use = recipient_name or ticket.buyer_full_name
     type_label = TYPE_LABEL.get(str(ticket.type), str(ticket.type))
     extra_rows = ""
@@ -104,7 +118,9 @@ def build_ticket_email_html(ticket: Ticket, gala: Gala, recipient_name: str | No
 </body></html>"""
 
 
-def build_ticket_email_text(ticket: Ticket, gala: Gala, recipient_name: str | None = None) -> str:
+def build_ticket_email_text(
+    ticket: Ticket, gala: Gala, recipient_name: str | None = None
+) -> str:
     name_to_use = recipient_name or ticket.buyer_full_name
     type_label = TYPE_LABEL.get(str(ticket.type), str(ticket.type))
     extras = []
@@ -131,7 +147,13 @@ def build_ticket_email_text(ticket: Ticket, gala: Gala, recipient_name: str | No
     )
 
 
-def send_ticket_email(db: Session, ticket: Ticket, gala: Gala, recipient_name: str | None = None, recipient_email: str | None = None) -> None:
+def send_ticket_email(
+    db: Session,
+    ticket: Ticket,
+    gala: Gala,
+    recipient_name: str | None = None,
+    recipient_email: str | None = None,
+) -> None:
     """Send the ticket by email — silent on failure (logged in notifications table)."""
     to_email = recipient_email or ticket.buyer_email
     if not to_email:

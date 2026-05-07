@@ -47,5 +47,8 @@ require_admin = require_roles(UserRole.SUPER_ADMIN)
 require_cashier = require_roles(UserRole.SUPER_ADMIN, UserRole.CASHIER)
 require_controller = require_roles(UserRole.SUPER_ADMIN, UserRole.CONTROLLER)
 require_participant = require_roles(
-    UserRole.SUPER_ADMIN, UserRole.PARTICIPANT, UserRole.CASHIER, UserRole.CONTROLLER
+    UserRole.SUPER_ADMIN,
+    UserRole.PARTICIPANT,
+    UserRole.CASHIER,
+    UserRole.CONTROLLER,
 )

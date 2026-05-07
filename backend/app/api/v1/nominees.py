@@ -1,4 +1,12 @@
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -24,7 +32,11 @@ def list_nominees(
     nominees = db.scalars(stmt).all()
 
     vote_counts = dict(
-        db.execute(select(Vote.nominee_id, func.count(Vote.id)).group_by(Vote.nominee_id)).all()
+        db.execute(
+            select(Vote.nominee_id, func.count(Vote.id)).group_by(
+                Vote.nominee_id
+            )
+        ).all()
     )
     return [
         NomineeOut(
@@ -40,21 +52,38 @@ def list_nominees(
     ]
 
 
-@router.post("", response_model=NomineeOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
-def create_nominee(payload: NomineeCreate, db: Session = Depends(get_db)) -> NomineeOut:
+@router.post(
+    "",
+    response_model=NomineeOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
+def create_nominee(
+    payload: NomineeCreate, db: Session = Depends(get_db)
+) -> NomineeOut:
     n = Nominee(**payload.model_dump())
     db.add(n)
     db.commit()
     db.refresh(n)
     return NomineeOut(
-        id=n.id, category_id=n.category_id, name=n.name,
-        school_promotion=n.school_promotion, photo_url=n.photo_url,
-        description=n.description, votes_count=0,
+        id=n.id,
+        category_id=n.category_id,
+        name=n.name,
+        school_promotion=n.school_promotion,
+        photo_url=n.photo_url,
+        description=n.description,
+        votes_count=0,
     )
 
 
-@router.patch("/{nominee_id}", response_model=NomineeOut, dependencies=[Depends(require_admin)])
-def update_nominee(nominee_id: int, payload: NomineeUpdate, db: Session = Depends(get_db)) -> NomineeOut:
+@router.patch(
+    "/{nominee_id}",
+    response_model=NomineeOut,
+    dependencies=[Depends(require_admin)],
+)
+def update_nominee(
+    nominee_id: int, payload: NomineeUpdate, db: Session = Depends(get_db)
+) -> NomineeOut:
     n = db.get(Nominee, nominee_id)
     if n is None:
         raise HTTPException(status_code=404, detail="Nominé introuvable")
@@ -62,15 +91,26 @@ def update_nominee(nominee_id: int, payload: NomineeUpdate, db: Session = Depend
         setattr(n, k, v)
     db.commit()
     db.refresh(n)
-    votes = db.scalar(select(func.count(Vote.id)).where(Vote.nominee_id == n.id)) or 0
+    votes = (
+        db.scalar(select(func.count(Vote.id)).where(Vote.nominee_id == n.id))
+        or 0
+    )
     return NomineeOut(
-        id=n.id, category_id=n.category_id, name=n.name,
-        school_promotion=n.school_promotion, photo_url=n.photo_url,
-        description=n.description, votes_count=int(votes),
+        id=n.id,
+        category_id=n.category_id,
+        name=n.name,
+        school_promotion=n.school_promotion,
+        photo_url=n.photo_url,
+        description=n.description,
+        votes_count=int(votes),
     )
 
 
-@router.delete("/{nominee_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
+@router.delete(
+    "/{nominee_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_admin)],
+)
 def delete_nominee(nominee_id: int, db: Session = Depends(get_db)) -> None:
     n = db.get(Nominee, nominee_id)
     if n is None:
@@ -79,7 +119,11 @@ def delete_nominee(nominee_id: int, db: Session = Depends(get_db)) -> None:
     db.commit()
 
 
-@router.post("/{nominee_id}/photo", response_model=NomineeOut, dependencies=[Depends(require_admin)])
+@router.post(
+    "/{nominee_id}/photo",
+    response_model=NomineeOut,
+    dependencies=[Depends(require_admin)],
+)
 def upload_nominee_photo(
     nominee_id: int,
     file: UploadFile = File(...),
@@ -89,14 +133,23 @@ def upload_nominee_photo(
     if n is None:
         raise HTTPException(status_code=404, detail="Nominé introuvable")
 
-    _, filename = save_image_upload(file, target_dir="uploads/nominees", base_name=n.id)
+    _, filename = save_image_upload(
+        file, target_dir="uploads/nominees", base_name=n.id
+    )
     n.photo_url = f"/uploads/nominees/{filename}"
     db.commit()
     db.refresh(n)
 
-    votes = db.scalar(select(func.count(Vote.id)).where(Vote.nominee_id == n.id)) or 0
+    votes = (
+        db.scalar(select(func.count(Vote.id)).where(Vote.nominee_id == n.id))
+        or 0
+    )
     return NomineeOut(
-        id=n.id, category_id=n.category_id, name=n.name,
-        school_promotion=n.school_promotion, photo_url=n.photo_url,
-        description=n.description, votes_count=int(votes),
+        id=n.id,
+        category_id=n.category_id,
+        name=n.name,
+        school_promotion=n.school_promotion,
+        photo_url=n.photo_url,
+        description=n.description,
+        votes_count=int(votes),
     )

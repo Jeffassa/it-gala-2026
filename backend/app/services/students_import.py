@@ -9,6 +9,7 @@ Smart behavior :
   name is used as the classe (typical ESATIC layout: one class per sheet).
 - Promotion priority: column → form default → sheet name (if no classe-fallback).
 """
+
 from __future__ import annotations
 
 import io
@@ -19,7 +20,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.student import Student
-
 
 MATRICULE_RE = re.compile(r"^\d{2}-ESATIC\d{4}[A-Z]{2}$")
 EMAIL_RE = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
@@ -32,46 +32,38 @@ HEADER_MAP = {
     "matricul": "matricule",
     "matr": "matricule",
     "matricule etudiant": "matricule",
-
     # Last name only
     "nom": "last_name",
     "noms": "last_name",
     "nom de famille": "last_name",
-
     # First name only
     "prenom": "first_name",
     "prenoms": "first_name",
-
     # Already-combined full name (legacy support)
     "nom complet": "full_name",
     "prenom et nom": "full_name",
     "nom et prenom": "full_name",
     "nom & prenom": "full_name",
     "etudiant": "full_name",
-
     # Gender
     "genre": "gender",
     "sexe": "gender",
     "sex": "gender",
     "m/f": "gender",
-
     # Email
     "email": "email",
     "e-mail": "email",
     "mail": "email",
     "courriel": "email",
-
     # Promotion
     "promotion": "promotion",
     "promo": "promotion",
     "annee": "promotion",
-
     # Classe
     "classe": "classe",
     "filiere": "classe",
     "specialite": "classe",
     "groupe": "classe",
-
     # Phone
     "telephone": "phone",
     "tel": "phone",
@@ -85,7 +77,19 @@ def _normalize_header(s: str) -> str:
     if s is None:
         return ""
     s = str(s).strip().lower()
-    for a, b in [("é", "e"), ("è", "e"), ("ê", "e"), ("à", "a"), ("â", "a"), ("ô", "o"), ("ç", "c"), ("î", "i"), ("ï", "i"), ("ù", "u"), ("û", "u")]:
+    for a, b in [
+        ("é", "e"),
+        ("è", "e"),
+        ("ê", "e"),
+        ("à", "a"),
+        ("â", "a"),
+        ("ô", "o"),
+        ("ç", "c"),
+        ("î", "i"),
+        ("ï", "i"),
+        ("ù", "u"),
+        ("û", "u"),
+    ]:
         s = s.replace(a, b)
     return s
 
@@ -148,7 +152,9 @@ def import_students_from_xlsx(
                 if key:
                     tentative[ci] = key
             fields = set(tentative.values())
-            if "matricule" in fields and ("last_name" in fields or "full_name" in fields):
+            if "matricule" in fields and (
+                "last_name" in fields or "full_name" in fields
+            ):
                 header_idx = ri
                 header_map = tentative
                 break
@@ -164,11 +170,20 @@ def import_students_from_xlsx(
         sheet_has_classe_col = "classe" in set(header_map.values())
         sheet_has_promotion_col = "promotion" in set(header_map.values())
 
-        for ri, row in enumerate(rows[header_idx + 1:], start=header_idx + 2):
+        for ri, row in enumerate(rows[header_idx + 1 :], start=header_idx + 2):
             data: dict[str, str] = {
                 f: ""
-                for f in ("matricule", "full_name", "first_name", "last_name",
-                          "email", "promotion", "classe", "gender", "phone")
+                for f in (
+                    "matricule",
+                    "full_name",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "promotion",
+                    "classe",
+                    "gender",
+                    "phone",
+                )
             }
             for ci, field in header_map.items():
                 if ci < len(row):
@@ -183,11 +198,15 @@ def import_students_from_xlsx(
             matricule = data["matricule"].upper().replace(" ", "")
             if not matricule:
                 skipped += 1
-                errors.append(f"Ligne {ri} (feuille « {ws.title} ») : matricule manquant — ignorée.")
+                errors.append(
+                    f"Ligne {ri} (feuille « {ws.title} ») : matricule manquant — ignorée."
+                )
                 continue
             if not MATRICULE_RE.match(matricule):
                 skipped += 1
-                errors.append(f"Ligne {ri} : matricule « {matricule} » invalide (format attendu AA-ESATIC####XX).")
+                errors.append(
+                    f"Ligne {ri} : matricule « {matricule} » invalide (format attendu AA-ESATIC####XX)."
+                )
                 continue
 
             # Compute full_name from prenom + nom OR full_name column
@@ -227,21 +246,27 @@ def import_students_from_xlsx(
                     continue
 
             gender = _normalize_gender(data["gender"])
-            
+
             email = data["email"].lower() if data["email"] else None
             if email and not EMAIL_RE.match(email):
                 skipped += 1
-                errors.append(f"Ligne {ri} : email « {email} » invalide pour {matricule}.")
+                errors.append(
+                    f"Ligne {ri} : email « {email} » invalide pour {matricule}."
+                )
                 continue
-                
+
             phone = data["phone"] or None
             if phone:
                 # Basic cleaning: remove spaces, dots, dashes
                 phone = re.sub(r"[\s.-]+", "", phone)
-                if len(phone) < 8: # Minimal sanity check
-                    phone = data["phone"] # fallback to original if too short to be cleaned
+                if len(phone) < 8:  # Minimal sanity check
+                    phone = data[
+                        "phone"
+                    ]  # fallback to original if too short to be cleaned
 
-            existing = db.scalar(select(Student).where(Student.matricule == matricule))
+            existing = db.scalar(
+                select(Student).where(Student.matricule == matricule)
+            )
             if existing:
                 existing.full_name = full_name
                 existing.email = email
@@ -251,15 +276,17 @@ def import_students_from_xlsx(
                 existing.phone = phone
                 updated += 1
             else:
-                db.add(Student(
-                    matricule=matricule,
-                    full_name=full_name,
-                    email=email,
-                    promotion=promotion,
-                    classe=classe,
-                    gender=gender,
-                    phone=phone,
-                ))
+                db.add(
+                    Student(
+                        matricule=matricule,
+                        full_name=full_name,
+                        email=email,
+                        promotion=promotion,
+                        classe=classe,
+                        gender=gender,
+                        phone=phone,
+                    )
+                )
                 created += 1
 
     db.commit()

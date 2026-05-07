@@ -18,7 +18,11 @@ def list_galas(db: Session = Depends(get_db)) -> list[GalaOut]:
 
 @router.get("/active", response_model=GalaOut | None)
 def active_gala(db: Session = Depends(get_db)) -> GalaOut | None:
-    g = db.scalar(select(Gala).where(Gala.is_active.is_(True)).order_by(Gala.edition_year.desc()))
+    g = db.scalar(
+        select(Gala)
+        .where(Gala.is_active.is_(True))
+        .order_by(Gala.edition_year.desc())
+    )
     return GalaOut.model_validate(g) if g else None
 
 
@@ -30,7 +34,12 @@ def get_gala(gala_id: int, db: Session = Depends(get_db)) -> GalaOut:
     return GalaOut.model_validate(g)
 
 
-@router.post("", response_model=GalaOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
+@router.post(
+    "",
+    response_model=GalaOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
 def create_gala(payload: GalaCreate, db: Session = Depends(get_db)) -> GalaOut:
     g = Gala(**payload.model_dump())
     db.add(g)
@@ -39,8 +48,12 @@ def create_gala(payload: GalaCreate, db: Session = Depends(get_db)) -> GalaOut:
     return GalaOut.model_validate(g)
 
 
-@router.patch("/{gala_id}", response_model=GalaOut, dependencies=[Depends(require_admin)])
-def update_gala(gala_id: int, payload: GalaUpdate, db: Session = Depends(get_db)) -> GalaOut:
+@router.patch(
+    "/{gala_id}", response_model=GalaOut, dependencies=[Depends(require_admin)]
+)
+def update_gala(
+    gala_id: int, payload: GalaUpdate, db: Session = Depends(get_db)
+) -> GalaOut:
     g = db.get(Gala, gala_id)
     if g is None:
         raise HTTPException(status_code=404, detail="Gala introuvable")
@@ -51,7 +64,11 @@ def update_gala(gala_id: int, payload: GalaUpdate, db: Session = Depends(get_db)
     return GalaOut.model_validate(g)
 
 
-@router.delete("/{gala_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
+@router.delete(
+    "/{gala_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_admin)],
+)
 def delete_gala(gala_id: int, db: Session = Depends(get_db)) -> None:
     g = db.get(Gala, gala_id)
     if g is None:

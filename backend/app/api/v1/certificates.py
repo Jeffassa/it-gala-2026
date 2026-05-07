@@ -10,11 +10,17 @@ from app.models.nominee import Nominee
 from app.models.vote import Vote
 from app.services.certificates import render_certificate
 
-router = APIRouter(prefix="/certificates", tags=["certificates"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/certificates",
+    tags=["certificates"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 @router.get("/nominee/{nominee_id}")
-def certificate_nominee(nominee_id: int, db: Session = Depends(get_db)) -> Response:
+def certificate_nominee(
+    nominee_id: int, db: Session = Depends(get_db)
+) -> Response:
     nominee = db.get(Nominee, nominee_id)
     if nominee is None:
         raise HTTPException(status_code=404, detail="Nominé introuvable")
@@ -45,7 +51,9 @@ def certificate_nominee(nominee_id: int, db: Session = Depends(get_db)) -> Respo
         school_promotion=nominee.school_promotion,
         is_winner=(leader_id == nominee.id),
     )
-    filename = f"certificat-{nominee.name.replace(' ', '_')}-{gala.edition_year}.pdf"
+    filename = (
+        f"certificat-{nominee.name.replace(' ', '_')}-{gala.edition_year}.pdf"
+    )
     return Response(
         content=pdf,
         media_type="application/pdf",
@@ -54,7 +62,9 @@ def certificate_nominee(nominee_id: int, db: Session = Depends(get_db)) -> Respo
 
 
 @router.get("/category/{category_id}/winner")
-def certificate_winner(category_id: int, db: Session = Depends(get_db)) -> Response:
+def certificate_winner(
+    category_id: int, db: Session = Depends(get_db)
+) -> Response:
     cat = db.get(Category, category_id)
     if cat is None:
         raise HTTPException(status_code=404, detail="Catégorie introuvable")
@@ -66,6 +76,8 @@ def certificate_winner(category_id: int, db: Session = Depends(get_db)) -> Respo
         .order_by(func.count(Vote.id).desc())
     ).all()
     if not rows or rows[0].votes == 0:
-        raise HTTPException(status_code=404, detail="Aucun vote dans cette catégorie")
+        raise HTTPException(
+            status_code=404, detail="Aucun vote dans cette catégorie"
+        )
     winner: Nominee = rows[0][0]
     return certificate_nominee(winner.id, db)

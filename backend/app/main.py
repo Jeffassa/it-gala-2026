@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -12,8 +11,21 @@ from sqlalchemy import inspect, text
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.v1 import (
-    audit, auth, categories, certificates, galas, live, nominees,
-    notifications, reports, scans, students, tickets, users, votes, souvenirs,
+    audit,
+    auth,
+    categories,
+    certificates,
+    galas,
+    live,
+    nominees,
+    notifications,
+    reports,
+    scans,
+    students,
+    tickets,
+    users,
+    votes,
+    souvenirs,
 )
 from app.core.config import settings
 from app.core.database import Base, engine
@@ -25,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Ajoute des headers HTTP de securite sur toutes les reponses."""
+
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         # Empeche les navigateurs de deviner le MIME (anti MIME-sniffing XSS)
@@ -47,41 +60,53 @@ def _ensure_columns() -> None:
         cols = {c["name"] for c in insp.get_columns("galas")}
         if "live_results_visible" not in cols:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "ALTER TABLE galas ADD COLUMN live_results_visible BOOLEAN DEFAULT FALSE"
-                ))
+                conn.execute(
+                    text(
+                        "ALTER TABLE galas ADD COLUMN live_results_visible BOOLEAN DEFAULT FALSE"
+                    )
+                )
 
     if "students" in insp.get_table_names():
         student_cols = {c["name"] for c in insp.get_columns("students")}
         if "classe" not in student_cols:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "ALTER TABLE students ADD COLUMN classe VARCHAR(80) DEFAULT NULL"
-                ))
+                conn.execute(
+                    text(
+                        "ALTER TABLE students ADD COLUMN classe VARCHAR(80) DEFAULT NULL"
+                    )
+                )
         if "gender" not in student_cols:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "ALTER TABLE students ADD COLUMN gender VARCHAR(1) DEFAULT NULL"
-                ))
+                conn.execute(
+                    text(
+                        "ALTER TABLE students ADD COLUMN gender VARCHAR(1) DEFAULT NULL"
+                    )
+                )
 
     if "tickets" in insp.get_table_names():
         ticket_cols = {c["name"] for c in insp.get_columns("tickets")}
         if "max_scans" not in ticket_cols:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "ALTER TABLE tickets ADD COLUMN max_scans INTEGER DEFAULT 1"
-                ))
+                conn.execute(
+                    text(
+                        "ALTER TABLE tickets ADD COLUMN max_scans INTEGER DEFAULT 1"
+                    )
+                )
         if "scan_count" not in ticket_cols:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "ALTER TABLE tickets ADD COLUMN scan_count INTEGER DEFAULT 0"
-                ))
+                conn.execute(
+                    text(
+                        "ALTER TABLE tickets ADD COLUMN scan_count INTEGER DEFAULT 0"
+                    )
+                )
         if "attendees" not in ticket_cols:
             with engine.begin() as conn:
                 # JSON works on SQLite, Postgres (JSON), MySQL 5.7+
-                conn.execute(text(
-                    "ALTER TABLE tickets ADD COLUMN attendees JSON DEFAULT NULL"
-                ))
+                conn.execute(
+                    text(
+                        "ALTER TABLE tickets ADD COLUMN attendees JSON DEFAULT NULL"
+                    )
+                )
 
 
 @asynccontextmanager
@@ -89,10 +114,14 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     _ensure_columns()
     # Avertir si la SECRET_KEY par defaut est utilisee en prod
-    if settings.SECRET_KEY in ("dev-secret-change-me", "dev-secret-please-change-in-prod-32chars", "change-me-in-prod-openssl-rand-hex-32"):
+    if settings.SECRET_KEY in (
+        "dev-secret-change-me",
+        "dev-secret-please-change-in-prod-32chars",
+        "change-me-in-prod-openssl-rand-hex-32",
+    ):
         logger.warning(
             "[SECURITY] SECRET_KEY est sur la valeur par defaut. "
-            "Generez-en une via : python -c \"import secrets; print(secrets.token_hex(32))\" "
+            'Generez-en une via : python -c "import secrets; print(secrets.token_hex(32))" '
             "et definissez-la dans la variable d'environnement SECRET_KEY."
         )
     yield

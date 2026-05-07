@@ -13,4 +13,6 @@ class Souvenir(Base):
     title: Mapped[str] = mapped_column(String(160))
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     order: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )

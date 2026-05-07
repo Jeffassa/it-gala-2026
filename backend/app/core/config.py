@@ -2,7 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     SECRET_KEY: str = "dev-secret-change-me"
     ALGORITHM: str = "HS256"
@@ -41,7 +43,10 @@ class Settings(BaseSettings):
     def validate_security(self):
         if self.SECRET_KEY == "dev-secret-change-me":
             # Only allow default secret if we are clearly in a local dev environment
-            if "localhost" not in self.DATABASE_URL and "127.0.0.1" not in self.DATABASE_URL:
+            if (
+                "localhost" not in self.DATABASE_URL
+                and "127.0.0.1" not in self.DATABASE_URL
+            ):
                 raise ValueError("SECRET_KEY must be changed for production!")
 
 

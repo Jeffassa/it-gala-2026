@@ -11,6 +11,7 @@ Falls back to console output otherwise.
 Records every send attempt in the `notifications` table for audit / journalisation.
 Supports plain-text, HTML, and inline image attachments (e.g. QR codes).
 """
+
 from __future__ import annotations
 
 import base64
@@ -26,7 +27,11 @@ from typing import Iterable
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.notification import Notification, NotificationChannel, NotificationStatus
+from app.models.notification import (
+    Notification,
+    NotificationChannel,
+    NotificationStatus,
+)
 
 
 def _from_header() -> str:
@@ -54,12 +59,14 @@ def _send_via_resend(
     if inline_images:
         attachments = []
         for cid, data, subtype in inline_images:
-            attachments.append({
-                "filename": f"{cid}.{subtype}",
-                "content": base64.b64encode(data).decode("ascii"),
-                "content_id": cid,
-                "disposition": "inline",
-            })
+            attachments.append(
+                {
+                    "filename": f"{cid}.{subtype}",
+                    "content": base64.b64encode(data).decode("ascii"),
+                    "content_id": cid,
+                    "disposition": "inline",
+                }
+            )
         payload["attachments"] = attachments
 
     req = urllib.request.Request(
@@ -108,10 +115,14 @@ def _send_via_smtp(
             if inline_images:
                 html_part = msg.get_payload()[-1]
                 for cid, data, subtype in inline_images:
-                    html_part.add_related(data, maintype="image", subtype=subtype, cid=f"<{cid}>")
+                    html_part.add_related(
+                        data, maintype="image", subtype=subtype, cid=f"<{cid}>"
+                    )
 
         ctx = ssl.create_default_context()
-        with smtplib.SMTP(settings.MAIL_HOST, settings.MAIL_PORT, timeout=15) as s:
+        with smtplib.SMTP(
+            settings.MAIL_HOST, settings.MAIL_PORT, timeout=15
+        ) as s:
             if settings.MAIL_TLS:
                 s.starttls(context=ctx)
             if settings.MAIL_USERNAME:
@@ -146,9 +157,21 @@ def send_email(
 
     # Choose transport
     if settings.RESEND_API_KEY:
-        ok, error = _send_via_resend(to=to, subject=subject, body=body, html=html, inline_images=inline_images)
+        ok, error = _send_via_resend(
+            to=to,
+            subject=subject,
+            body=body,
+            html=html,
+            inline_images=inline_images,
+        )
     elif settings.MAIL_HOST:
-        ok, error = _send_via_smtp(to=to, subject=subject, body=body, html=html, inline_images=inline_images)
+        ok, error = _send_via_smtp(
+            to=to,
+            subject=subject,
+            body=body,
+            html=html,
+            inline_images=inline_images,
+        )
     else:
         # Console fallback (dev mode without any provider)
         if settings.MAIL_DEBUG:

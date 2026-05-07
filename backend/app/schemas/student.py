@@ -4,7 +4,6 @@ from typing import Literal
 
 from pydantic import BaseModel, EmailStr, field_validator
 
-
 MATRICULE_RE = re.compile(r"^\d{2}-ESATIC\d{4}[A-Z]{2}$")
 
 Gender = Literal["M", "F"]

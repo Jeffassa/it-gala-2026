@@ -2,6 +2,7 @@
 
 Run: python -m app.seed
 """
+
 from datetime import datetime
 
 from app.core.database import Base, SessionLocal, engine
@@ -18,33 +19,35 @@ def seed() -> None:
     db = SessionLocal()
     try:
         if db.query(User).count() == 0:
-            db.add_all([
-                User(
-                    full_name="Super Admin",
-                    email="admin@gala.it",
-                    hashed_password=hash_password("admin1234"),
-                    role=UserRole.SUPER_ADMIN,
-                ),
-                User(
-                    full_name="Aïcha Touré",
-                    email="caissiere@gala.it",
-                    hashed_password=hash_password("caissiere1234"),
-                    role=UserRole.CASHIER,
-                ),
-                User(
-                    full_name="Yves N'Dri",
-                    email="controleur@gala.it",
-                    hashed_password=hash_password("controleur1234"),
-                    role=UserRole.CONTROLLER,
-                ),
-                User(
-                    full_name="Linda Yao",
-                    email="participant@gala.it",
-                    hashed_password=hash_password("participant1234"),
-                    role=UserRole.PARTICIPANT,
-                    school_promotion="L3 GLSI 2026",
-                ),
-            ])
+            db.add_all(
+                [
+                    User(
+                        full_name="Super Admin",
+                        email="admin@gala.it",
+                        hashed_password=hash_password("admin1234"),
+                        role=UserRole.SUPER_ADMIN,
+                    ),
+                    User(
+                        full_name="Aïcha Touré",
+                        email="caissiere@gala.it",
+                        hashed_password=hash_password("caissiere1234"),
+                        role=UserRole.CASHIER,
+                    ),
+                    User(
+                        full_name="Yves N'Dri",
+                        email="controleur@gala.it",
+                        hashed_password=hash_password("controleur1234"),
+                        role=UserRole.CONTROLLER,
+                    ),
+                    User(
+                        full_name="Linda Yao",
+                        email="participant@gala.it",
+                        hashed_password=hash_password("participant1234"),
+                        role=UserRole.PARTICIPANT,
+                        school_promotion="L3 GLSI 2026",
+                    ),
+                ]
+            )
             db.commit()
 
         if db.query(Gala).count() == 0:
@@ -71,23 +74,94 @@ def seed() -> None:
             db.refresh(gala)
 
             categories_seed = [
-                ("Top 3 par filière", "Les 3 premiers de chaque filière, par promotion.", "trophy", 1),
-                ("Majors avec mention", "Les majors de chaque filière ayant obtenu une moyenne ≥ 14, par promotion.", "award", 2),
-                ("Meilleur club", "Le club étudiant qui s'est le plus distingué cette année.", "users", 3),
-                ("Meilleur projet étudiant", "Le projet le plus innovant et impactant de l'année.", "rocket", 4),
-                ("Meilleur professeur", "Le professeur le plus apprécié, par promotion.", "graduation-cap", 5),
-                ("Meilleur basketteur", "Le talent du parquet, toutes promotions confondues.", "star", 6),
-                ("Meilleur footballeur", "La star du terrain, toutes promotions confondues.", "star", 7),
-                ("Meilleur badeur", "Celui ou celle qui anime toutes les soirées, par promotion.", "sparkles", 8),
-                ("Meilleur délégué de classe", "Le ou la représentant·e qui a le plus servi sa classe, par promotion.", "vote", 9),
-                ("Meilleur président de promotion", "La voix qui rassemble et qui inspire.", "crown", 10),
-                ("Meilleur duo (couple)", "Le couple le plus apprécié de l'école.", "heart", 11),
-                ("Le/La plus faneur(se)", "La star du charme, par promotion.", "smile", 12),
-                ("Le/La plus sociable", "Connaît tout le monde, par promotion.", "users", 13),
+                (
+                    "Top 3 par filière",
+                    "Les 3 premiers de chaque filière, par promotion.",
+                    "trophy",
+                    1,
+                ),
+                (
+                    "Majors avec mention",
+                    "Les majors de chaque filière ayant obtenu une moyenne ≥ 14, par promotion.",
+                    "award",
+                    2,
+                ),
+                (
+                    "Meilleur club",
+                    "Le club étudiant qui s'est le plus distingué cette année.",
+                    "users",
+                    3,
+                ),
+                (
+                    "Meilleur projet étudiant",
+                    "Le projet le plus innovant et impactant de l'année.",
+                    "rocket",
+                    4,
+                ),
+                (
+                    "Meilleur professeur",
+                    "Le professeur le plus apprécié, par promotion.",
+                    "graduation-cap",
+                    5,
+                ),
+                (
+                    "Meilleur basketteur",
+                    "Le talent du parquet, toutes promotions confondues.",
+                    "star",
+                    6,
+                ),
+                (
+                    "Meilleur footballeur",
+                    "La star du terrain, toutes promotions confondues.",
+                    "star",
+                    7,
+                ),
+                (
+                    "Meilleur badeur",
+                    "Celui ou celle qui anime toutes les soirées, par promotion.",
+                    "sparkles",
+                    8,
+                ),
+                (
+                    "Meilleur délégué de classe",
+                    "Le ou la représentant·e qui a le plus servi sa classe, par promotion.",
+                    "vote",
+                    9,
+                ),
+                (
+                    "Meilleur président de promotion",
+                    "La voix qui rassemble et qui inspire.",
+                    "crown",
+                    10,
+                ),
+                (
+                    "Meilleur duo (couple)",
+                    "Le couple le plus apprécié de l'école.",
+                    "heart",
+                    11,
+                ),
+                (
+                    "Le/La plus faneur(se)",
+                    "La star du charme, par promotion.",
+                    "smile",
+                    12,
+                ),
+                (
+                    "Le/La plus sociable",
+                    "Connaît tout le monde, par promotion.",
+                    "users",
+                    13,
+                ),
             ]
             cats = []
             for name, desc, icon, idx in categories_seed:
-                c = Category(gala_id=gala.id, name=name, description=desc, icon=icon, order_index=idx)
+                c = Category(
+                    gala_id=gala.id,
+                    name=name,
+                    description=desc,
+                    icon=icon,
+                    order_index=idx,
+                )
                 db.add(c)
                 cats.append(c)
             db.commit()
@@ -109,11 +183,15 @@ def seed() -> None:
             )
             for cat in cats:
                 for name, promo in sample_nominees.get(cat.name, []):
-                    db.add(Nominee(
-                        category_id=cat.id, name=name, school_promotion=promo,
-                        biography=bio_template.format(name=name),
-                        achievements=achievements_template,
-                    ))
+                    db.add(
+                        Nominee(
+                            category_id=cat.id,
+                            name=name,
+                            school_promotion=promo,
+                            biography=bio_template.format(name=name),
+                            achievements=achievements_template,
+                        )
+                    )
             db.commit()
 
             # Seed souvenirs

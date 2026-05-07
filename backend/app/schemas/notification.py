@@ -24,4 +24,6 @@ class NotificationOut(BaseModel):
 class BroadcastRequest(BaseModel):
     subject: str
     body: str
-    role: str | None = None  # optional filter (participant, cashier, controller, super_admin)
+    role: str | None = (
+        None  # optional filter (participant, cashier, controller, super_admin)
+    )
