@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Response
-from sqlalchemy import func, select, case
+from sqlalchemy import case, delete, func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -9,6 +9,8 @@ from app.core.deps import require_admin
 from app.models.category import Category
 from app.models.gala import Gala
 from app.models.nominee import Nominee
+from app.models.notification import Notification
+from app.models.scan import Scan
 from app.models.ticket import Ticket, TicketStatus
 from app.models.user import User, UserRole
 from app.models.vote import Vote
@@ -139,6 +141,55 @@ def full_report(db: Session = Depends(get_db)) -> FullReport:
     return FullReport(
         stats=stats, tickets_by_type=by_type, category_results=cat_results
     )
+
+
+@router.post("/wipe-test-data")
+def wipe_test_data(db: Session = Depends(get_db)) -> dict:
+    """Vide les donnees de test transactionnelles. Conserve la structure :
+
+    SUPPRIME :
+      - tous les votes
+      - tous les scans (audit log)
+      - tous les tickets
+      - toutes les notifications (historique d'emails)
+
+    CONSERVE :
+      - utilisateurs (admin, caissier, controleur, participants)
+      - galas
+      - categories
+      - nominees (avec leurs photos Cloudinary)
+      - souvenirs (avec leurs photos Cloudinary)
+      - etudiants ESATIC
+
+    Renvoie un resume du nombre de lignes supprimees par table.
+    Action irreversible : a n'utiliser que pour vider les tests avant
+    le jour J de l'evenement reel.
+    """
+    counts = {
+        "votes": int(db.scalar(select(func.count(Vote.id))) or 0),
+        "scans": int(db.scalar(select(func.count(Scan.id))) or 0),
+        "tickets": int(db.scalar(select(func.count(Ticket.id))) or 0),
+        "notifications": int(db.scalar(select(func.count(Notification.id))) or 0),
+    }
+
+    # Ordre important pour respecter les FKs : votes/scans -> tickets, votes -> nominees ne change pas
+    db.execute(delete(Vote))
+    db.execute(delete(Scan))
+    db.execute(delete(Ticket))
+    db.execute(delete(Notification))
+    db.commit()
+
+    return {
+        "deleted": counts,
+        "kept": [
+            "users",
+            "galas",
+            "categories",
+            "nominees",
+            "souvenirs",
+            "students",
+        ],
+    }
 
 
 @router.get("/full.xlsx")
