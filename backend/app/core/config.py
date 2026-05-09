@@ -36,6 +36,21 @@ class Settings(BaseSettings):
     # Frontend URL for password reset links
     FRONTEND_URL: str = "http://localhost:5173"
 
+    # Cloudinary (stockage images persistant - prod sur Render)
+    # Si les 3 valeurs sont definies, les uploads vont vers Cloudinary.
+    # Sinon, fallback sur le filesystem local (backend/uploads/).
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+
+    @property
+    def cloudinary_enabled(self) -> bool:
+        return bool(
+            self.CLOUDINARY_CLOUD_NAME
+            and self.CLOUDINARY_API_KEY
+            and self.CLOUDINARY_API_SECRET
+        )
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]

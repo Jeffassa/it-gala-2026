@@ -133,10 +133,10 @@ def upload_nominee_photo(
     if n is None:
         raise HTTPException(status_code=404, detail="Nominé introuvable")
 
-    _, filename = save_image_upload(
+    storage_id, public = save_image_upload(
         file, target_dir="uploads/nominees", base_name=n.id
     )
-    n.photo_url = f"/uploads/nominees/{filename}"
+    n.photo_url = public if storage_id.startswith("cloudinary:") else f"/uploads/nominees/{public}"
     db.commit()
     db.refresh(n)
 

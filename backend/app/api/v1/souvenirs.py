@@ -92,10 +92,11 @@ def upload_souvenir_photo(
     if s is None:
         raise HTTPException(status_code=404, detail="Souvenir introuvable")
 
-    _, filename = save_image_upload(
+    storage_id, public = save_image_upload(
         file, target_dir="uploads/souvenirs", base_name=s.id
     )
-    s.image_url = f"/uploads/souvenirs/{filename}"
+    # Cloudinary -> public est deja une URL HTTPS absolue ; disque -> filename a prefixer
+    s.image_url = public if storage_id.startswith("cloudinary:") else f"/uploads/souvenirs/{public}"
     db.commit()
     db.refresh(s)
     return s
