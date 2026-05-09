@@ -95,50 +95,50 @@ export default function LivePage() {
     >
       <div className="absolute inset-0 glow-grid opacity-50" />
 
-      <header className="relative max-w-[1800px] mx-auto px-10 py-8 flex items-center justify-between flex-wrap gap-6">
-        <div>
-          <div className="flex items-center gap-4 mb-4">
-            <Link 
-              to="/" 
-              className="flex items-center justify-center w-10 h-10 rounded-full border border-line bg-bg-elev/50 text-ink-muted hover:text-white hover:border-accent transition-all"
+      <header className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 flex items-start sm:items-center justify-between flex-wrap gap-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <Link
+              to="/"
+              className="shrink-0 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-line bg-bg-elev/50 text-ink-muted hover:text-white hover:border-accent transition-all"
               title="Retour à l'accueil"
             >
               <ArrowLeft size={18} />
             </Link>
-            <p className="text-xs uppercase tracking-[0.4em] text-accent inline-flex items-center gap-2">
-              <Radio size={14} className="animate-pulse" /> Grand écran · Direct
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-accent inline-flex items-center gap-2">
+              <Radio size={14} className="animate-pulse" /> Direct
             </p>
           </div>
-          <h1 className="font-serif text-5xl xl:text-6xl font-black">
+          <h1 className="font-serif text-3xl sm:text-5xl xl:text-6xl font-black leading-tight">
             <span className="primary-text">{data.gala.name}</span> {data.gala.edition_year}
           </h1>
-          <p className="font-serif italic text-2xl text-ink-muted mt-2">« {data.gala.theme} »</p>
+          <p className="font-serif italic text-base sm:text-2xl text-ink-muted mt-2">« {data.gala.theme} »</p>
         </div>
-        <div className="text-right">
-          <p className="text-xs uppercase tracking-widest text-ink-muted mb-2">Le compte à rebours</p>
+        <div className="text-left sm:text-right w-full sm:w-auto">
+          <p className="text-[10px] sm:text-xs uppercase tracking-widest text-ink-muted mb-2">Compte à rebours</p>
           <Countdown target={data.gala.event_date} compact />
           <p className="text-xs text-ink-muted mt-3">{formatDate(data.gala.event_date)} · {data.gala.location}</p>
           <p className="text-[11px] text-ink-faint mt-1 inline-flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor] animate-pulse" />
-            Données mises à jour il y a {tick % 3} s
+            MAJ il y a {tick % 3} s
           </p>
         </div>
       </header>
 
-      <main className="relative max-w-[1800px] mx-auto px-10 pb-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <main className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 pb-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {data.categories.map((c) => {
           const leader = c.nominees[0];
           const Icon = c.category_icon ? (CAT_ICON[c.category_icon] ?? Trophy) : Trophy;
           return (
-            <section key={c.category_id} className="bg-black/60 backdrop-blur border border-line rounded-3xl p-7 shadow-elev">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <span className="icon-tile icon-tile-primary w-12 h-12">
-                    <Icon size={22} />
+            <section key={c.category_id} className="bg-black/60 backdrop-blur border border-line rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-elev">
+              <div className="flex items-center justify-between gap-2 mb-5">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <span className="icon-tile icon-tile-primary w-10 h-10 sm:w-12 sm:h-12 shrink-0">
+                    <Icon size={20} />
                   </span>
-                  <h2 className="font-serif text-2xl font-bold">{c.category_name}</h2>
+                  <h2 className="font-serif text-lg sm:text-2xl font-bold leading-tight break-words">{c.category_name}</h2>
                 </div>
-                <span className="badge badge-accent">{c.total_votes} votes</span>
+                <span className="badge badge-accent shrink-0 text-[10px] sm:text-xs">{c.total_votes} votes</span>
               </div>
 
               {leader && c.total_votes > 0 && (
@@ -146,21 +146,27 @@ export default function LivePage() {
                   <p className="text-[11px] uppercase tracking-widest text-accent mb-1.5 inline-flex items-center gap-1.5">
                     <Crown size={12} /> En tête
                   </p>
-                  <p className="font-serif text-2xl font-bold">{leader.name}</p>
+                  <p className="font-serif text-xl sm:text-2xl font-bold break-words leading-tight">{leader.name}</p>
                   <p className="text-sm text-ink-muted">{leader.school_promotion ?? ""}</p>
                   <p className="font-mono text-3xl accent-text font-black mt-2">{Math.round(leader.share * 100)}%</p>
                 </div>
               )}
 
-              <ul className="space-y-2.5">
+              <ul className="space-y-3">
                 {c.nominees.slice(0, 5).map((n, i) => (
-                  <li key={n.id} className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-ink-faint w-5">{i + 1}.</span>
-                    <span className="flex-1 truncate text-sm">{n.name}</span>
-                    <div className="w-32 h-2 bg-bg-elev3 rounded-full overflow-hidden">
-                      <div className="h-full bg-accent-gradient transition-all duration-700" style={{ width: `${(n.share || 0) * 100}%` }} />
+                  <li key={n.id} className="grid grid-cols-[auto_1fr_auto] gap-x-2 gap-y-1 items-center">
+                    {/* Ligne 1 : numero + nom + votes */}
+                    <span className="font-mono text-xs text-ink-faint">{i + 1}.</span>
+                    <span className="text-sm leading-tight break-words">{n.name}</span>
+                    <span className="font-mono text-xs text-ink-muted tabular-nums">{n.votes}</span>
+                    {/* Ligne 2 : barre de progression sur toute la largeur sous le nom */}
+                    <span></span>
+                    <div className="col-span-2 h-1.5 bg-bg-elev3 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-accent-gradient transition-all duration-700"
+                        style={{ width: `${(n.share || 0) * 100}%` }}
+                      />
                     </div>
-                    <span className="font-mono text-xs text-ink-muted tabular-nums w-8 text-right">{n.votes}</span>
                   </li>
                 ))}
                 {c.nominees.length === 0 && (
@@ -172,7 +178,7 @@ export default function LivePage() {
         })}
       </main>
 
-      <footer className="relative max-w-[1800px] mx-auto px-10 pb-8 flex justify-between text-xs text-ink-faint flex-wrap gap-3">
+      <footer className="relative max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 pb-8 flex justify-between text-xs text-ink-faint flex-wrap gap-3">
         <span className="inline-flex items-center gap-2">
           <Radio size={12} /> IT Gala — Mise à jour automatique toutes les 3 secondes
         </span>
