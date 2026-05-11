@@ -68,12 +68,26 @@ def scan_stats(
     db: Session = Depends(get_db),
     current: User = Depends(require_controller),
 ) -> dict:
+    # Get active gala ID to filter stats
+    from app.models.gala import Gala
+    active_gala_id = db.scalar(select(Gala.id).where(Gala.is_active.is_(True)))
+    
+    if not active_gala_id:
+        return {
+            "total_tickets": 0,
+            "scanned_tickets": 0,
+            "remaining": 0,
+            "my_scans": 0,
+            "by_type": {"solo": 0, "duo": 0, "gbonhi": 0},
+        }
+
+    total = db.scalar(select(func.count(Ticket.id)).where(Ticket.gala_id == active_gala_id)) or 0
     total_capacity = (
-        db.scalar(select(func.sum(Ticket.max_scans)))
+        db.scalar(select(func.sum(Ticket.max_scans)).where(Ticket.gala_id == active_gala_id))
         or 0
     )
     scanned = (
-        db.scalar(select(func.sum(Ticket.scan_count)))
+        db.scalar(select(func.sum(Ticket.scan_count)).where(Ticket.gala_id == active_gala_id))
         or 0
     )
     remaining = max(0, int(total_capacity) - int(scanned))
@@ -85,10 +99,10 @@ def scan_stats(
         or 0
     )
 
-    # Stats par type (nombre de tickets émis)
-    solo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)) or 0
-    duo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)) or 0
-    gbonhi = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.GBONHI)) or 0
+    # Stats par type (nombre de tickets émis pour le gala actif)
+    solo = db.scalar(select(func.count(Ticket.id)).where(Ticket.gala_id == active_gala_id, Ticket.type == TicketType.SOLO)) or 0
+    duo = db.scalar(select(func.count(Ticket.id)).where(Ticket.gala_id == active_gala_id, Ticket.type == TicketType.DUO)) or 0
+    gbonhi = db.scalar(select(func.count(Ticket.id)).where(Ticket.gala_id == active_gala_id, Ticket.type == TicketType.GBONHI)) or 0
 
     return {
         "total_tickets": int(total),
@@ -109,9 +123,15 @@ def recent_scans(
     current: User = Depends(require_controller),
     limit: int = 20,
 ) -> list[TicketOut]:
+    # Get active gala ID
+    from app.models.gala import Gala
+    active_gala_id = db.scalar(select(Gala.id).where(Gala.is_active.is_(True)))
+    if not active_gala_id:
+        return []
+
     rows = db.scalars(
         select(Ticket)
-        .where(Ticket.scan_count > 0)
+        .where(Ticket.gala_id == active_gala_id, Ticket.scan_count > 0)
         .order_by(Ticket.scanned_at.desc())
         .limit(limit)
     ).all()
