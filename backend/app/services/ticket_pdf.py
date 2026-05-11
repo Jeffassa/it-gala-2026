@@ -50,17 +50,17 @@ def render_ticket_pdf(
     width, height = page_size
     c = canvas.Canvas(buf, pagesize=page_size)
 
-    # Background
-    c.setFillColor(BLACK)
-    c.rect(0, 0, width, height, fill=1, stroke=0)
-
     # Compact Card (Landscape style)
     card_w = 180 * mm
     card_h = 85 * mm
     card_x = (width - card_w) / 2
     card_y = height - 20 * mm - card_h # Top of the page
 
-    # Card Background/Borders
+    # Card Background (Fill the card only)
+    c.setFillColor(BLACK)
+    c.roundRect(card_x, card_y, card_w, card_h, 8 * mm, fill=1, stroke=0)
+
+    # Card Borders
     c.setStrokeColor(BORDEAUX)
     c.setLineWidth(1.5)
     c.roundRect(card_x, card_y, card_w, card_h, 8 * mm, stroke=1, fill=0)
