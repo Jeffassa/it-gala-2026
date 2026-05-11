@@ -133,13 +133,18 @@ export default function LoginPage() {
                   <input
                     className="input pl-11 uppercase"
                     required
-                    minLength={2}
-                    maxLength={40}
+                    minLength={14}
+                    maxLength={14}
+                    pattern="^\d{2}-ESATIC\d{4}[A-Z]{2}$"
+                    title="Format : AA-ESATICNNNNLL (ex : 26-ESATIC0001AB)"
                     value={matricule}
                     onChange={(e) => setMatricule(e.target.value.toUpperCase())}
-                    placeholder="Ex : ESATIC2026-001"
+                    placeholder="26-ESATIC0001AB"
                     autoComplete="off"
                   />
+                  <p className="mt-1.5 text-xs text-ink-faint">
+                    Format : <span className="font-mono">AA-ESATICNNNNLL</span> — ex : <span className="font-mono">26-ESATIC0001AB</span>
+                  </p>
                 </Field>
               </>
             )}
