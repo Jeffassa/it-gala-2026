@@ -80,36 +80,60 @@ export default function ControllerPage() {
     } catch (err) { toast.error(apiError(err)); beep(220, 300); }
   }
 
+  // Effet pour lancer la camera une fois que le DOM du plein ecran est pret
+  useEffect(() => {
+    if (!scanning) return;
+
+    let mounted = true;
+    const initCamera = async () => {
+      try {
+        // Attendre un court instant que React insere l'element dans le DOM
+        await new Promise(r => setTimeout(r, 100));
+        if (!mounted) return;
+
+        const qr = new Html5Qrcode("scanner-region", {
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          verbose: false,
+        } as any);
+        qrRef.current = qr;
+
+        await qr.start(
+          { facingMode: "environment" },
+          {
+            fps: 25,
+            qrbox: 250,
+            disableFlip: true,
+            experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+          } as any,
+          (decoded) => {
+            const code = extractTicketCode(decoded);
+            if (code) handleCode(code);
+          },
+          () => undefined
+        );
+      } catch (err) {
+        if (mounted) {
+          setScanning(false);
+          toast.error("Impossible d'activer la caméra. Vérifiez les permissions et le HTTPS.");
+        }
+      }
+    };
+
+    initCamera();
+    return () => { mounted = false; };
+  }, [scanning]);
+
   async function startCamera() {
     setScanning(true);
-    try {
-      const qr = new Html5Qrcode("scanner-region", {
-        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-        verbose: false,
-      } as any);
-      qrRef.current = qr;
-      await qr.start(
-        { facingMode: "environment" },
-        {
-          fps: 25,
-          qrbox: 250,
-          disableFlip: true,
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true
-          }
-        } as any,
-        (decoded) => {
-          const code = extractTicketCode(decoded);
-          if (code) handleCode(code);
-          else toast.error(`QR illisible : "${decoded.slice(0, 30)}"`);
-        },
-        () => undefined
-      );
-    } catch (err) {
-      setScanning(false);
-      toast.error("Impossible d'activer la caméra");
-    }
   }
+
+  // Auto-fermeture du modal de resultat pour scan en serie
+  useEffect(() => {
+    if (lastResult?.ok) {
+      const t = setTimeout(() => setLastResult(null), 1800);
+      return () => clearTimeout(t);
+    }
+  }, [lastResult]);
 
   async function stopCamera() {
     try { await qrRef.current?.stop(); await qrRef.current?.clear(); } catch {/* ignore */}
