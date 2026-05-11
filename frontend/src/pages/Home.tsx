@@ -491,22 +491,15 @@ export default function HomePage() {
               {gala?.dress_code ?? "Tenue de soirée"}
             </InfoCard>
             <InfoCard delay={240} Icon={Drama} label="Programme">
-              <div className="space-y-3 text-sm font-sans">
+              <div className="flex items-center gap-4 text-base">
                 <div>
-                  <p className="flex items-baseline gap-2 mb-0.5">
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-accent">Matin</span>
-                    <span className="font-mono text-[11px] text-ink-faint">08h00 – 12h00</span>
-                  </p>
-                  <p className="font-serif text-base font-semibold mb-0.5">IT Connect</p>
-                  <p className="text-ink-muted text-xs leading-snug">Accueil → Cocktail & Networking</p>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-accent mb-0.5">Matin</p>
+                  <p className="font-serif font-semibold">IT Connect</p>
                 </div>
-                <div className="pt-3 border-t border-line/60">
-                  <p className="flex items-baseline gap-2 mb-0.5">
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-accent">Soir</span>
-                    <span className="font-mono text-[11px] text-ink-faint">20h00 – 02h00</span>
-                  </p>
-                  <p className="font-serif text-base font-semibold mb-0.5">IT Gala</p>
-                  <p className="text-ink-muted text-xs leading-snug">Cocktail & installation → Bal poussière</p>
+                <span className="text-ink-faint">·</span>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-accent mb-0.5">Soir</p>
+                  <p className="font-serif font-semibold">IT Gala</p>
                 </div>
               </div>
             </InfoCard>
