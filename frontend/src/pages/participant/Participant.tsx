@@ -70,12 +70,43 @@ export default function ParticipantPage() {
               <Info Icon={Drama} label="Thème" value={`« ${gala.theme} »`} />
               <Info Icon={Shirt} label="Tenue" value={gala.dress_code ?? "Tenue de soirée"} />
             </div>
-            {gala.program && (
-              <div className="mt-4 bg-bg-elev border border-line rounded-2xl p-6">
-                <p className="text-xs uppercase tracking-[0.2em] text-ink-muted mb-3 font-semibold">Programme de la soirée</p>
-                <p className="whitespace-pre-line text-ink-muted leading-relaxed">{gala.program}</p>
+            <div className="mt-4 bg-bg-elev border border-line rounded-2xl p-6">
+              <p className="text-xs uppercase tracking-[0.2em] text-ink-muted mb-5 font-semibold">Programme du jour</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                {/* Matin */}
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-accent mb-1.5">Matin</p>
+                  <h3 className="font-serif text-xl font-bold mb-1">IT Connect</h3>
+                  <p className="font-mono text-xs text-accent tracking-wider mb-4">08h00 – 12h00</p>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-ink-faint mb-0.5">Première activité</p>
+                      <p className="text-sm text-ink leading-snug">Accueil des participants</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-ink-faint mb-0.5">Dernière activité</p>
+                      <p className="text-sm text-ink leading-snug">Cocktail & Networking</p>
+                    </div>
+                  </div>
+                </div>
+                {/* Soir */}
+                <div className="sm:border-l sm:border-line/70 sm:pl-6 border-t pt-6 sm:border-t-0 sm:pt-0">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-accent mb-1.5">Soir</p>
+                  <h3 className="font-serif text-xl font-bold mb-1">IT Gala</h3>
+                  <p className="font-mono text-xs text-accent tracking-wider mb-4">20h00 – 02h00</p>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-ink-faint mb-0.5">Première activité</p>
+                      <p className="text-sm text-ink leading-snug">Cocktail & installation</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-ink-faint mb-0.5">Dernière activité</p>
+                      <p className="text-sm text-ink leading-snug">Bal poussière</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </section>
         )}
       </main>
