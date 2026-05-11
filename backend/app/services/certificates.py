@@ -13,11 +13,11 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
-GOLD = colors.HexColor("#d4af37")
-GOLD_BRIGHT = colors.HexColor("#f5d76e")
-DARK = colors.HexColor("#08080c")
-INK = colors.HexColor("#1a1a26")
-MUTED = colors.HexColor("#6b6b76")
+BORDEAUX = colors.HexColor("#6D071A")
+ROSE_GOLD = colors.HexColor("#B76E79")
+ROSE_GOLD_LIGHT = colors.HexColor("#E0BFB8")
+BLACK = colors.HexColor("#08080c")
+MUTED = colors.HexColor("#A89A9A")
 
 
 def render_certificate(
@@ -37,18 +37,19 @@ def render_certificate(
     width, height = page_size
     c = canvas.Canvas(buf, pagesize=page_size)
 
-    # Background — deep dark with subtle radial feel via filled rectangles
-    c.setFillColor(DARK)
+    # Background — pure black
+    c.setFillColor(BLACK)
     c.rect(0, 0, width, height, fill=1, stroke=0)
 
-    # Outer gold border
-    c.setStrokeColor(GOLD)
-    c.setLineWidth(2)
+    # Outer bordeaux border
+    c.setStrokeColor(BORDEAUX)
+    c.setLineWidth(3)
     c.rect(
         15 * mm, 15 * mm, width - 30 * mm, height - 30 * mm, stroke=1, fill=0
     )
-    # Inner thin border
-    c.setLineWidth(0.5)
+    # Inner thin rose gold border
+    c.setStrokeColor(ROSE_GOLD)
+    c.setLineWidth(0.8)
     c.rect(
         20 * mm, 20 * mm, width - 40 * mm, height - 40 * mm, stroke=1, fill=0
     )
@@ -61,7 +62,7 @@ def render_certificate(
         (20 * mm, height - 20 * mm),
         (width - 20 * mm, height - 20 * mm),
     ]:
-        c.setStrokeColor(GOLD_BRIGHT)
+        c.setStrokeColor(ROSE_GOLD_LIGHT)
         c.setLineWidth(1.5)
         sx = -1 if x > width / 2 else 1
         sy = -1 if y > height / 2 else 1
@@ -69,26 +70,26 @@ def render_certificate(
         c.line(x, y, x, y + sy * corner)
 
     # Top emblem
-    c.setFillColor(GOLD_BRIGHT)
+    c.setFillColor(ROSE_GOLD_LIGHT)
     c.setFont("Helvetica-Bold", 9)
     c.drawCentredString(width / 2, height - 38 * mm, "★  IT  AWARDS  ★")
 
-    c.setFillColor(GOLD)
+    c.setFillColor(ROSE_GOLD)
     c.setFont("Helvetica", 8)
     c.drawCentredString(
         width / 2, height - 44 * mm, f"ÉDITION {edition_year}".upper()
     )
 
     # Title
-    c.setFillColor(GOLD_BRIGHT)
+    c.setFillColor(BORDEAUX)
     c.setFont("Times-Bold", 36)
     title = (
         "CERTIFICAT DE LAURÉAT" if is_winner else "CERTIFICAT DE NOMINATION"
     )
     c.drawCentredString(width / 2, height - 70 * mm, title)
 
-    # Decorative gold line
-    c.setStrokeColor(GOLD)
+    # Decorative rose gold line
+    c.setStrokeColor(ROSE_GOLD)
     c.setLineWidth(1)
     line_y = height - 78 * mm
     c.line(width / 2 - 60 * mm, line_y, width / 2 + 60 * mm, line_y)
@@ -99,7 +100,7 @@ def render_certificate(
     c.drawCentredString(width / 2, height - 92 * mm, "Décerné à")
 
     # Recipient name
-    c.setFillColor(colors.whitesmoke)
+    c.setFillColor(ROSE_GOLD_LIGHT)
     c.setFont("Times-Bold", 30)
     c.drawCentredString(width / 2, height - 108 * mm, nominee_name)
 
@@ -120,7 +121,7 @@ def render_certificate(
         y -= 6 * mm
 
     # Category
-    c.setFillColor(GOLD_BRIGHT)
+    c.setFillColor(ROSE_GOLD)
     c.setFont("Times-BoldItalic", 22)
     c.drawCentredString(width / 2, y - 4 * mm, f"« {category_name} »")
 
@@ -131,12 +132,12 @@ def render_certificate(
     c.drawCentredString(
         width / 2,
         footer_y + 6 * mm,
-        f"{gala_name} — {event_date.strftime('%d %B %Y')}".upper(),
+        f"{gala_name} - {event_date.strftime('%d %B %Y')}".upper(),
     )
     c.drawCentredString(width / 2, footer_y, location.upper())
 
     # Signature placeholders
-    c.setStrokeColor(GOLD)
+    c.setStrokeColor(ROSE_GOLD)
     c.setLineWidth(0.6)
     sig_y = 28 * mm
     c.line(45 * mm, sig_y, 95 * mm, sig_y)

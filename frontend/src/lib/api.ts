@@ -186,8 +186,8 @@ export const liveApi = {
 
 /* ============ Certificates ============ */
 export const certificateApi = {
-  nomineeUrl: (nomineeId: number) => `/api/v1/certificates/nominee/${nomineeId}`,
-  winnerUrl: (categoryId: number) => `/api/v1/certificates/category/${categoryId}/winner`,
+  nomineeUrl: (nomineeId: number) => `/certificates/nominee/${nomineeId}`,
+  winnerUrl: (categoryId: number) => `/certificates/category/${categoryId}/winner`,
 };
 
 /* ============ Notifications ============ */

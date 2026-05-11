@@ -34,14 +34,21 @@ export default function AdminCertificates() {
   }, [catId]);
 
   async function downloadCertificate(url: string, filename: string) {
-    const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    if (!res.ok) return;
-    const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = objectUrl; a.download = filename;
-    a.click();
-    URL.revokeObjectURL(objectUrl);
+    try {
+      const { data } = await api.get(url, { responseType: "blob" });
+      const blob = new Blob([data], { type: "application/pdf" });
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(objectUrl);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Erreur lors du téléchargement du certificat:", err);
+    }
   }
 
   const sorted = [...nominees].sort((a, b) => b.votes_count - a.votes_count);

@@ -57,7 +57,7 @@ def certificate_nominee(
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
