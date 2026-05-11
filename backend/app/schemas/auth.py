@@ -26,7 +26,7 @@ class RegisterRequest(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    matricule: str = Field(min_length=14, max_length=14)
+    matricule: str = Field(min_length=15, max_length=15)
     school_promotion: str | None = None
 
     @field_validator("matricule")

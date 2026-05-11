@@ -133,8 +133,8 @@ export default function LoginPage() {
                   <input
                     className="input pl-11 uppercase"
                     required
-                    minLength={14}
-                    maxLength={14}
+                    minLength={15}
+                    maxLength={15}
                     pattern="^\d{2}-ESATIC\d{4}[A-Z]{2}$"
                     title="Format : AA-ESATICNNNNLL (ex : 26-ESATIC0001AB)"
                     value={matricule}
