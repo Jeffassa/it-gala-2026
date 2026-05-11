@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { Empty } from "@/components/Empty";
 import { Spinner } from "@/components/Spinner";
-import { categoryApi, certificateApi, galaApi, nomineeApi } from "@/lib/api";
+import { api, categoryApi, certificateApi, galaApi, nomineeApi } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import type { Category, Gala, Nominee } from "@/lib/types";
 
