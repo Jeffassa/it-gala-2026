@@ -54,56 +54,61 @@ def render_ticket_pdf(
     c.setFillColor(BLACK)
     c.rect(0, 0, width, height, fill=1, stroke=0)
 
-    # Main Card
-    card_margin = 20 * mm
-    card_width = width - 2 * card_margin
-    card_height = 180 * mm
-    card_y = height - card_margin - card_height
+    # Main Card (Much larger to fit all info)
+    card_margin_side = 15 * mm
+    card_margin_top = 15 * mm
+    card_width = width - 2 * card_margin_side
+    card_height = 260 * mm # Increased from 180mm
+    card_y = height - card_margin_top - card_height
 
     c.setStrokeColor(BORDEAUX)
-    c.setLineWidth(1)
-    c.roundRect(card_margin, card_y, card_width, card_height, 10 * mm, stroke=1, fill=0)
+    c.setLineWidth(1.5)
+    c.roundRect(card_margin_side, card_y, card_width, card_height, 12 * mm, stroke=1, fill=0)
 
     # Inner border
     c.setStrokeColor(ROSE_GOLD)
-    c.setLineWidth(0.5)
-    c.roundRect(card_margin + 2*mm, card_y + 2*mm, card_width - 4*mm, card_height - 4*mm, 8 * mm, stroke=1, fill=0)
+    c.setLineWidth(0.7)
+    c.roundRect(card_margin_side + 3*mm, card_y + 3*mm, card_width - 6*mm, card_height - 6*mm, 10 * mm, stroke=1, fill=0)
 
-    # Header (y: 260mm down to 230mm)
-    header_y = height - 40 * mm
+    # Header (y: ~280mm down to 250mm)
+    header_top_y = height - 35 * mm
     c.setFillColor(ROSE_GOLD)
-    c.setFont("Helvetica-Bold", 10)
-    c.drawCentredString(width / 2, header_y, "★  IT  AWARDS  ★")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawCentredString(width / 2, header_top_y, "★   I T   A W A R D S   ★")
     
     c.setFillColor(BORDEAUX)
-    c.setFont("Times-Bold", 32)
-    c.drawCentredString(width / 2, header_y - 15 * mm, gala_name.upper())
+    c.setFont("Times-Bold", 36)
+    c.drawCentredString(width / 2, header_top_y - 18 * mm, gala_name.upper())
     
     c.setFillColor(ROSE_GOLD)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawCentredString(width / 2, header_y - 22 * mm, f"ÉDITION {edition_year}")
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(width / 2, header_top_y - 26 * mm, f"ÉDITION {edition_year}")
 
-    # Attendee Info (y: 220mm)
-    info_y = header_y - 45 * mm
+    # Attendee Info (y: 235mm)
+    info_y = header_top_y - 50 * mm
     c.setFillColor(ROSE_GOLD_LIGHT)
-    c.setFont("Helvetica-Bold", 18)
+    c.setFont("Helvetica-Bold", 20)
     c.drawCentredString(width / 2, info_y, f"BILLET {ticket_type.upper()}")
     
     c.setFillColor(colors.whitesmoke)
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(width / 2, info_y - 8 * mm, buyer_name)
+    c.setFont("Helvetica-Bold", 16)
+    # Handle potentially long names by limiting font size
+    name_font_size = 16 if len(buyer_name) < 25 else 13
+    c.setFont("Helvetica-Bold", name_font_size)
+    c.drawCentredString(width / 2, info_y - 10 * mm, buyer_name)
+    
     if partner_name:
         c.setFont("Helvetica", 11)
-        c.drawCentredString(width / 2, info_y - 14 * mm, f"Accompagné(e) de : {partner_name}")
+        c.setFillColor(MUTED)
+        c.drawCentredString(width / 2, info_y - 17 * mm, f"Accompagné(e) de : {partner_name}")
 
-    # QR Code (y: 180mm down to 110mm)
-    qr_size = 65 * mm
+    # QR Code (y: 205mm down to 135mm)
+    qr_size = 60 * mm
     qr_x = (width - qr_size) / 2
     qr_y = info_y - 85 * mm
     
-    # White background for QR
     c.setFillColor(colors.white)
-    c.roundRect(qr_x - 5*mm, qr_y - 5*mm, qr_size + 10*mm, qr_size + 10*mm, 5*mm, fill=1, stroke=0)
+    c.roundRect(qr_x - 6*mm, qr_y - 6*mm, qr_size + 12*mm, qr_size + 12*mm, 6*mm, fill=1, stroke=0)
     
     qr_buf = _qr_png_buf(ticket_code)
     from reportlab.lib.utils import ImageReader
@@ -113,38 +118,38 @@ def render_ticket_pdf(
     # Ticket Code
     c.setFillColor(ROSE_GOLD_LIGHT)
     c.setFont("Courier-Bold", 14)
-    c.drawCentredString(width / 2, qr_y - 12 * mm, ticket_code)
+    c.drawCentredString(width / 2, qr_y - 14 * mm, ticket_code)
 
-    # Event Details (y: 80mm)
-    details_y = qr_y - 35 * mm
+    # Event Details (y: 110mm)
+    details_base_y = qr_y - 40 * mm
     c.setStrokeColor(ROSE_GOLD)
-    c.setLineWidth(0.5)
-    c.line(card_margin + 20*mm, details_y + 5*mm, width - card_margin - 20*mm, details_y + 5*mm)
+    c.setLineWidth(0.6)
+    c.line(card_margin_side + 25*mm, details_base_y + 8*mm, width - card_margin_side - 25*mm, details_base_y + 8*mm)
 
-    c.setFont("Helvetica", 11)
+    c.setFont("Helvetica", 12)
     c.setFillColor(MUTED)
     
     def draw_detail(label, value, y):
-        c.drawRightString(width / 2 - 5*mm, y, f"{label} :")
+        c.drawRightString(width / 2 - 8*mm, y, f"{label} :")
         c.setFillColor(colors.whitesmoke)
-        c.drawString(width / 2 + 5*mm, y, str(value))
+        c.drawString(width / 2 + 8*mm, y, str(value))
         c.setFillColor(MUTED)
 
-    draw_detail("Date", event_date.strftime("%d %B %Y"), details_y - 5*mm)
-    draw_detail("Lieu", location, details_y - 12*mm)
+    draw_detail("Date", event_date.strftime("%d %B %Y"), details_base_y)
+    draw_detail("Lieu", location, details_base_y - 10*mm)
     if attendee_status:
-        draw_detail("Statut", attendee_status, details_y - 19*mm)
+        draw_detail("Statut", attendee_status, details_base_y - 20*mm)
     
-    # Price (y: 40mm)
+    # Price (y: 50mm)
     c.setFillColor(ROSE_GOLD_LIGHT)
-    c.setFont("Helvetica-Bold", 22)
+    c.setFont("Helvetica-Bold", 26)
     price_str = f"{int(price):,} FCFA".replace(",", " ")
-    c.drawCentredString(width / 2, card_y + 20 * mm, price_str)
+    c.drawCentredString(width / 2, card_y + 25 * mm, price_str)
 
-    # Fine print
+    # Footer
     c.setFillColor(MUTED)
-    c.setFont("Helvetica", 8)
-    c.drawCentredString(width / 2, card_y + 8 * mm, "Présentez ce QR Code à l'entrée. Billet personnel et unique.")
+    c.setFont("Helvetica", 9)
+    c.drawCentredString(width / 2, card_y + 12 * mm, "Présentez ce QR Code à l'entrée. Billet personnel et unique.")
 
     c.showPage()
     c.save()
