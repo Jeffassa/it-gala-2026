@@ -32,7 +32,7 @@ def scan_ticket(
     if ticket.status == TicketStatus.SCANNED:
         return ScanResult(
             ok=False,
-            message=f"Ticket déjà scanné le maximum de fois ({ticket.max_scans}/{ticket.max_scans})",
+            message="Quota de scans atteint pour ce ticket",
             ticket=TicketOut.model_validate(ticket),
             already_scanned=True,
         )
@@ -53,7 +53,11 @@ def scan_ticket(
     db.commit()
     db.refresh(ticket)
 
-    message = f"Ticket validé ✓ ({ticket.scan_count}/{ticket.max_scans})"
+    if ticket.type == TicketType.SOLO:
+        message = "Ticket validé ✓"
+    else:
+        message = f"Ticket validé ✓ ({ticket.scan_count}/{ticket.max_scans})"
+
     return ScanResult(
         ok=True, message=message, ticket=TicketOut.model_validate(ticket)
     )
