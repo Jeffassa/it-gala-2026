@@ -362,9 +362,9 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { type: "Solo", price: "15 000", desc: "Une place individuelle pour vivre la soirée à votre rythme.", icon: Ticket, perks: ["Cocktail et nourriture", "divertissements", "Soirée dansante"] },
-              { type: "Duo", price: "25 000", desc: "Deux places côte-à-côte pour partager la magie.", icon: Heart, perks: ["Cocktail et nourriture", "divertissements", "Soirée dansante", "Places voisines garanties"], featured: true },
-              { type: "Gbonhi", price: "65 000", desc: "Pack groupe d'amis : la table parfaite pour célébrer.", icon: Users, perks: ["Cocktail et nourriture", "divertissements", "Soirée dansante", "Table réservée de 5 places"] },
+              { type: "Solo", price: "15 000", desc: "Une place individuelle pour vivre la soirée à votre rythme.", icon: Ticket, perks: ["Masque offert","Cocktail et nourriture", "divertissements", "Soirée dansante"] },
+              { type: "Duo", price: "25 000", desc: "Deux places côte-à-côte pour partager la magie.", icon: Heart, perks: ["Masque offert","Cocktail et nourriture", "divertissements", "Soirée dansante", "Places voisines garanties"], featured: true },
+              { type: "Gbonhi", price: "65 000", desc: "Pack groupe d'amis : la table parfaite pour célébrer.", icon: Users, perks: ["Masque offert","Cocktail et nourriture", "divertissements", "Soirée dansante", "Table réservée de 5 places"] },
             ].map((t, i) => (
               <FadeIn key={t.type} delay={i * 100}>
                 <div className={`relative h-full rounded-2xl p-7 border transition hover:-translate-y-1 ${t.featured ? "border-accent bg-gradient-to-br from-accent/10 via-bg-elev to-bg-elev shadow-glow" : "border-line bg-bg-elev hover:border-accent/40"}`}>
