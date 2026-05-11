@@ -10,6 +10,7 @@ interface AuthState {
   setUser: (user: User) => void;
   logout: () => void;
   hasRole: (...roles: Role[]) => boolean;
+  getRole: () => Role | null;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -20,9 +21,21 @@ export const useAuthStore = create<AuthState>()(
       setSession: (token, user) => set({ token, user }),
       setUser: (user) => set({ user }),
       logout: () => set({ token: null, user: null }),
+      getRole: () => {
+        const { token, user } = get();
+        if (!token) return null;
+        try {
+          // Decode JWT payload without verification (signature checked by backend)
+          // but prevents easy UI manipulation by changing localStorage user object
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          return payload.role as Role;
+        } catch {
+          return user?.role || null;
+        }
+      },
       hasRole: (...roles) => {
-        const u = get().user;
-        return !!u && roles.includes(u.role);
+        const role = get().getRole();
+        return !!role && roles.includes(role);
       },
     }),
     { name: "gala-auth" }

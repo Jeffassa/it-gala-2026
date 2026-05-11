@@ -11,9 +11,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import require_admin
+from app.core.deps import get_current_user, require_admin
 from app.core.uploads import save_image_upload
 from app.models.nominee import Nominee
+from app.models.user import User, UserRole
 from app.models.vote import Vote
 from app.schemas.nominee import NomineeCreate, NomineeOut, NomineeUpdate
 
@@ -24,6 +25,7 @@ router = APIRouter(prefix="/nominees", tags=["nominees"])
 def list_nominees(
     category_id: int | None = Query(None),
     db: Session = Depends(get_db),
+    current: User | None = Depends(get_current_user),
 ) -> list[NomineeOut]:
     stmt = select(Nominee)
     if category_id is not None:
@@ -38,6 +40,7 @@ def list_nominees(
             )
         ).all()
     )
+    is_admin = current and current.role == UserRole.SUPER_ADMIN
     return [
         NomineeOut(
             id=n.id,
@@ -46,7 +49,7 @@ def list_nominees(
             school_promotion=n.school_promotion,
             photo_url=n.photo_url,
             description=n.description,
-            votes_count=int(vote_counts.get(n.id, 0)),
+            votes_count=int(vote_counts.get(n.id, 0)) if is_admin else 0,
         )
         for n in nominees
     ]

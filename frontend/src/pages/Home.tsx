@@ -610,7 +610,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 mt-10 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-3 text-xs text-ink-faint">
-          <p>© {new Date().getFullYear()} IT Gala — Tous droits réservés.</p>
+          <p>{new Date().getFullYear()} IT Gala — Tous droits réservés.</p>
           <p>Une initiative pour célébrer la tech ivoirienne.</p>
         </div>
       </footer>

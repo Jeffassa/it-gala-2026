@@ -27,7 +27,6 @@ Plateforme complète de gestion d'un gala de remise de prix tech : page d'accuei
 docker compose up -d
 ```
 
-PostgreSQL écoute sur `localhost:5432` (db `gala`, user `gala`, password `gala`).
 
 ### 2. Backend (FastAPI)
 

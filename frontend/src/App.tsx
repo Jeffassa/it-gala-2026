@@ -1,10 +1,11 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { Spinner } from "@/components/Spinner";
 import { ToastStack } from "@/components/Toast";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuthStore } from "@/store/auth";
+import { authApi } from "@/lib/api";
 
 // Pages publiques chargees immediatement (visiteur arrive sur la home en general)
 import HomePage from "@/pages/Home";
@@ -41,17 +42,30 @@ function PageLoader() {
 }
 
 function HomeOrApp() {
-  const user = useAuthStore((s) => s.user);
+  const { user, getRole } = useAuthStore();
   if (!user) return <HomePage />;
-  switch (user.role) {
+  
+  const role = getRole();
+  switch (role) {
     case "super_admin": return <Navigate to="/admin" replace />;
     case "cashier": return <Navigate to="/cashier" replace />;
     case "controller": return <Navigate to="/controller" replace />;
     case "participant": return <Navigate to="/me" replace />;
+    default: return <HomePage />;
   }
 }
 
 export default function App() {
+  const { token, setUser, logout } = useAuthStore();
+
+  useEffect(() => {
+    if (token) {
+      authApi.me()
+        .then((u) => setUser(u))
+        .catch(() => logout());
+    }
+  }, [token, setUser, logout]);
+
   return (
     <>
       <Suspense fallback={<PageLoader />}>
