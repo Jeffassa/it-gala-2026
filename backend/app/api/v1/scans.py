@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import require_controller
+from app.models.gala import Gala
 from app.models.scan import Scan
 from app.models.ticket import Ticket, TicketStatus, TicketType
 from app.models.user import User
@@ -23,6 +24,16 @@ def scan_ticket(
     ticket = db.scalar(select(Ticket).where(Ticket.code == code))
     if ticket is None:
         return ScanResult(ok=False, message="Ticket inconnu")
+
+    # Verify ticket belongs to active gala
+    active_gala_id = db.scalar(select(Gala.id).where(Gala.is_active.is_(True)))
+    if ticket.gala_id != active_gala_id:
+        return ScanResult(
+            ok=False,
+            message="Ticket d'une autre édition / invalide pour ce gala",
+            ticket=TicketOut.model_validate(ticket),
+        )
+
     if ticket.status == TicketStatus.CANCELLED:
         return ScanResult(
             ok=False,
@@ -69,7 +80,6 @@ def scan_stats(
     current: User = Depends(require_controller),
 ) -> dict:
     # Get active gala ID to filter stats
-    from app.models.gala import Gala
     active_gala_id = db.scalar(select(Gala.id).where(Gala.is_active.is_(True)))
     
     if not active_gala_id:
@@ -124,7 +134,6 @@ def recent_scans(
     limit: int = 20,
 ) -> list[TicketOut]:
     # Get active gala ID
-    from app.models.gala import Gala
     active_gala_id = db.scalar(select(Gala.id).where(Gala.is_active.is_(True)))
     if not active_gala_id:
         return []
