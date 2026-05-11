@@ -17,6 +17,7 @@ from app.core.security import (
     verify_password,
 )
 from app.models.password_reset import PasswordResetToken
+from app.models.student import Student
 from app.models.user import User, UserRole
 from app.schemas.auth import (
     ForgotPasswordRequest,
@@ -44,12 +45,40 @@ def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email déjà utilisé",
         )
+
+    # Le matricule doit correspondre a un etudiant ESATIC importe par l'admin.
+    student = db.scalar(
+        select(Student).where(Student.matricule == payload.matricule)
+    )
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Matricule inconnu : aucun etudiant ESATIC ne correspond a ce"
+                " matricule. Verifiez votre saisie ou contactez le comite"
+                " d'organisation."
+            ),
+        )
+
+    # Un meme matricule ne peut creer qu'un seul compte voteur.
+    already = db.scalar(
+        select(User).where(User.matricule == payload.matricule)
+    )
+    if already:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ce matricule a deja ete utilise pour creer un compte.",
+        )
+
     user = User(
         full_name=payload.full_name,
         email=payload.email,
         hashed_password=hash_password(payload.password),
         role=UserRole.PARTICIPANT,
-        school_promotion=payload.school_promotion,
+        # On pre-remplit la promotion depuis l'annuaire ESATIC si l'utilisateur
+        # n'a rien fourni — ainsi on garde l'info de filiere/promotion sans
+        # bousculer le formulaire d'inscription.
+        school_promotion=payload.school_promotion or student.promotion,
         matricule=payload.matricule,
     )
     db.add(user)
