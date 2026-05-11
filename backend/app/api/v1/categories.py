@@ -3,9 +3,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import require_admin
+from app.core.deps import get_current_user, require_admin
 from app.models.category import Category
 from app.models.nominee import Nominee
+from app.models.user import User, UserRole
 from app.models.vote import Vote
 from app.schemas.category import (
     CategoryCreate,
@@ -21,6 +22,7 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 def list_categories(
     gala_id: int | None = Query(None),
     db: Session = Depends(get_db),
+    current: User | None = Depends(get_current_user),
 ) -> list[CategoryWithStats]:
     stmt = select(Category).order_by(Category.order_index, Category.id)
     if gala_id is not None:
@@ -42,11 +44,12 @@ def list_categories(
         ).all()
     )
 
+    is_admin = current and current.role == UserRole.SUPER_ADMIN
     return [
         CategoryWithStats(
             **CategoryOut.model_validate(c).model_dump(),
-            total_votes=int(vote_counts.get(c.id, 0)),
-            nominees_count=int(nom_counts.get(c.id, 0)),
+            total_votes=int(vote_counts.get(c.id, 0)) if is_admin else 0,
+            nominees_count=int(nom_counts.get(c.id, 0)) if is_admin else 0,
         )
         for c in cats
     ]

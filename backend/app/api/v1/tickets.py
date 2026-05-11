@@ -140,7 +140,19 @@ def get_ticket_by_code(
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
 ) -> TicketOut:
+    from app.models.user import UserRole
     t = db.scalar(select(Ticket).where(Ticket.code == code))
     if t is None:
         raise HTTPException(status_code=404, detail="Ticket introuvable")
+    
+    # Staff can see all tickets. Participants can only see their own.
+    is_staff = current.role in [UserRole.SUPER_ADMIN, UserRole.CASHIER, UserRole.CONTROLLER]
+    is_buyer = (current.email == t.buyer_email)
+    
+    if not (is_staff or is_buyer):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Vous n'avez pas l'autorisation de consulter ce ticket."
+        )
+        
     return TicketOut.model_validate(t)
