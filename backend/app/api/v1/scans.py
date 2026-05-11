@@ -68,13 +68,16 @@ def scan_stats(
     db: Session = Depends(get_db),
     current: User = Depends(require_controller),
 ) -> dict:
-    total = db.scalar(select(func.count(Ticket.id))) or 0
-    scanned = (
-        db.scalar(
-            select(func.sum(Ticket.scan_count))
-        )
+    total_capacity = (
+        db.scalar(select(func.sum(Ticket.max_scans)))
         or 0
     )
+    scanned = (
+        db.scalar(select(func.sum(Ticket.scan_count)))
+        or 0
+    )
+    remaining = max(0, int(total_capacity) - int(scanned))
+
     my_scans = (
         db.scalar(
             select(func.count(Scan.id)).where(Scan.scanned_by_id == current.id)
@@ -82,32 +85,15 @@ def scan_stats(
         or 0
     )
 
-    # Stats par type
-    solo = (
-        db.scalar(
-            select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)
-        )
-        or 0
-    )
-    duo = (
-        db.scalar(
-            select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)
-        )
-        or 0
-    )
-    gbonhi = (
-        db.scalar(
-            select(func.count(Ticket.id)).where(
-                Ticket.type == TicketType.GBONHI
-            )
-        )
-        or 0
-    )
+    # Stats par type (nombre de tickets émis)
+    solo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.SOLO)) or 0
+    duo = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.DUO)) or 0
+    gbonhi = db.scalar(select(func.count(Ticket.id)).where(Ticket.type == TicketType.GBONHI)) or 0
 
     return {
         "total_tickets": int(total),
         "scanned_tickets": int(scanned),
-        "remaining": int(total) - int(scanned),
+        "remaining": remaining,
         "my_scans": int(my_scans),
         "by_type": {
             "solo": int(solo),
