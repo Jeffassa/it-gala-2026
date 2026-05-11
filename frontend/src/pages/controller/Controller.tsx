@@ -83,23 +83,25 @@ export default function ControllerPage() {
   async function startCamera() {
     setScanning(true);
     try {
-      // formatsToSupport: ne lit que les QR (plus rapide qu'omni-format Code128/EAN/etc.)
       const qr = new Html5Qrcode("scanner-region", {
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
         verbose: false,
       } as any);
       qrRef.current = qr;
       await qr.start(
-        { facingMode: "environment" },
+        { 
+          facingMode: "environment",
+          width: { ideal: 640 },
+          height: { ideal: 480 } 
+        },
         {
-          fps: 25,
-          qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-            const size = Math.floor(minEdge * 0.8);
-            return { width: size, height: size };
-          },
-          aspectRatio: 1.333,
-          disableFlip: false,
+          fps: 30,
+          qrbox: 260,
+          aspectRatio: 1.0,
+          disableFlip: true,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true
+          }
         } as any,
         (decoded) => {
           const code = extractTicketCode(decoded);
