@@ -89,15 +89,10 @@ export default function ControllerPage() {
       } as any);
       qrRef.current = qr;
       await qr.start(
-        { 
-          facingMode: "environment",
-          width: { ideal: 640 },
-          height: { ideal: 480 } 
-        },
+        { facingMode: "environment" },
         {
-          fps: 30,
-          qrbox: 260,
-          aspectRatio: 1.0,
+          fps: 25,
+          qrbox: 250,
           disableFlip: true,
           experimentalFeatures: {
             useBarCodeDetectorIfSupported: true
