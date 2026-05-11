@@ -78,7 +78,7 @@ const PROGRAM_EVENING = [
 const FAQ = [
   { q: "Comment voter pour mes nominés favoris ?", a: "Créez votre compte voteur via « Mon espace de vote », puis rendez-vous dans la salle de vote pour découvrir les nominés et faire votre choix dans chaque catégorie. Un seul vote par catégorie est autorisé, mais vous pouvez le modifier jusqu'à la clôture." },
   { q: "Où acheter mes tickets ?", a: "Les tickets s'achètent directement à la caisse officielle de l'événement. Trois formules sont proposées : Solo (15 000 FCFA), Duo (25 000 FCFA) et Gbonhi pour un groupe d'amis (65 000 FCFA)." },
-  { q: "Le code vestimentaire est-il strict ?", a: "Oui, l'événement applique un dress code Black Tie. Costumes sombres et tenues de soirée sont attendus pour respecter l'esprit du gala." },
+  { q: "Le code vestimentaire est-il strict ?", a: "Oui, l'événement applique un dress code Noir-Or rosé-Rouge bordeaux. Costumes sombres et tenues de soirée sont attendus pour respecter l'esprit du gala." },
   { q: "Puis-je récupérer mon ticket plus tard ?", a: "Votre ticket est associé à votre email et à un QR code unique. Vous le présentez à l'entrée pour validation par les contrôleurs équipés de scanners." },
   { q: "Y aura-t-il une retransmission ?", a: "Oui. Les résultats des votes seront diffusés en direct sur la page « Grand écran » durant la cérémonie, et un récapitulatif sera publié sur nos canaux officiels." },
 ];
