@@ -167,7 +167,7 @@ def send_ticket_email(
         # Generate PDF attachment
         pdf = render_ticket_pdf(
             ticket_code=ticket.code,
-            buyer_name=ticket.buyer_full_name,
+            buyer_name=recipient_name or ticket.buyer_full_name,
             ticket_type=str(ticket.type),
             gala_name=gala.name,
             edition_year=gala.edition_year,
@@ -187,6 +187,7 @@ def send_ticket_email(
             inline_images=[("qrcode", png, "png")],
             attachments=[(f"ticket-{ticket.code}.pdf", pdf, "application/pdf")],
         )
-    except Exception:
-        # Failure already recorded in notifications table by send_email
-        pass
+    except Exception as e:
+        import logging
+        logging.error(f"Erreur lors de l'envoi du ticket par email: {e}")
+        # Failure already recorded in notifications table by send_email if it reached it
