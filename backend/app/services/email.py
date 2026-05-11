@@ -45,6 +45,7 @@ def _send_via_resend(
     body: str,
     html: str | None,
     inline_images: Iterable[tuple[str, bytes, str]] | None,
+    attachments: Iterable[tuple[str, bytes, str]] | None = None,
 ) -> tuple[bool, str | None]:
     """POST to Resend API. Returns (ok, error_message)."""
     payload: dict = {
@@ -56,18 +57,28 @@ def _send_via_resend(
     if html:
         payload["html"] = html
 
-    if inline_images:
-        attachments = []
-        for cid, data, subtype in inline_images:
-            attachments.append(
-                {
-                    "filename": f"{cid}.{subtype}",
-                    "content": base64.b64encode(data).decode("ascii"),
-                    "content_id": cid,
-                    "disposition": "inline",
-                }
-            )
-        payload["attachments"] = attachments
+    if inline_images or attachments:
+        resend_attachments = []
+        if inline_images:
+            for cid, data, subtype in inline_images:
+                resend_attachments.append(
+                    {
+                        "filename": f"{cid}.{subtype}",
+                        "content": base64.b64encode(data).decode("ascii"),
+                        "content_id": cid,
+                        "disposition": "inline",
+                    }
+                )
+        if attachments:
+            for filename, data, content_type in attachments:
+                resend_attachments.append(
+                    {
+                        "filename": filename,
+                        "content": base64.b64encode(data).decode("ascii"),
+                        "disposition": "attachment",
+                    }
+                )
+        payload["attachments"] = resend_attachments
 
     req = urllib.request.Request(
         "https://api.resend.com/emails",
@@ -103,6 +114,7 @@ def _send_via_smtp(
     body: str,
     html: str | None,
     inline_images: Iterable[tuple[str, bytes, str]] | None,
+    attachments: Iterable[tuple[str, bytes, str]] | None = None,
 ) -> tuple[bool, str | None]:
     try:
         msg = EmailMessage()
@@ -118,6 +130,16 @@ def _send_via_smtp(
                     html_part.add_related(
                         data, maintype="image", subtype=subtype, cid=f"<{cid}>"
                     )
+        
+        if attachments:
+            for filename, data, content_type in attachments:
+                maintype, subtype = content_type.split("/", 1)
+                msg.add_attachment(
+                    data,
+                    maintype=maintype,
+                    subtype=subtype,
+                    filename=filename,
+                )
 
         ctx = ssl.create_default_context()
         with smtplib.SMTP(
@@ -141,6 +163,7 @@ def send_email(
     body: str,
     html: str | None = None,
     inline_images: Iterable[tuple[str, bytes, str]] | None = None,
+    attachments: Iterable[tuple[str, bytes, str]] | None = None,
     user_id: int | None = None,
 ) -> Notification:
     """Send an email and record the attempt. Returns the Notification row."""
@@ -163,6 +186,7 @@ def send_email(
             body=body,
             html=html,
             inline_images=inline_images,
+            attachments=attachments,
         )
     elif settings.MAIL_HOST:
         ok, error = _send_via_smtp(
@@ -171,6 +195,7 @@ def send_email(
             body=body,
             html=html,
             inline_images=inline_images,
+            attachments=attachments,
         )
     else:
         # Console fallback (dev mode without any provider)

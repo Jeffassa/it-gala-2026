@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.models.gala import Gala
 from app.models.ticket import Ticket
 from app.services.email import send_email
+from app.services.ticket_pdf import render_ticket_pdf
 
 TYPE_LABEL = {"solo": "Solo", "duo": "Duo", "gbonhi": "Gbonhi"}
 
@@ -162,6 +163,21 @@ def send_ticket_email(
         png = _qr_png(ticket.code)
         html = build_ticket_email_html(ticket, gala, recipient_name)
         text = build_ticket_email_text(ticket, gala, recipient_name)
+        
+        # Generate PDF attachment
+        pdf = render_ticket_pdf(
+            ticket_code=ticket.code,
+            buyer_name=ticket.buyer_full_name,
+            ticket_type=str(ticket.type),
+            gala_name=gala.name,
+            edition_year=gala.edition_year,
+            event_date=gala.event_date,
+            location=gala.location,
+            price=ticket.price,
+            attendee_status=ticket.attendee_status,
+            partner_name=ticket.partner_full_name,
+        )
+        
         send_email(
             db,
             to=to_email,
@@ -169,6 +185,7 @@ def send_ticket_email(
             body=text,
             html=html,
             inline_images=[("qrcode", png, "png")],
+            attachments=[(f"ticket-{ticket.code}.pdf", pdf, "application/pdf")],
         )
     except Exception:
         # Failure already recorded in notifications table by send_email
