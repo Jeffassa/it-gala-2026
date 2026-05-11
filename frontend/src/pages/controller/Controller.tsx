@@ -66,27 +66,12 @@ export default function ControllerPage() {
 
   async function handleCode(code: string) {
     const now = Date.now();
-    // Anti-doublon de scan dans une fenetre courte
-    if (lastScanRef.current?.code === code && now - lastScanRef.current.at < 1200) return;
+    // Anti-doublon de scan dans une fenetre tres courte (evite triple scan accidentel)
+    if (lastScanRef.current?.code === code && now - lastScanRef.current.at < 800) return;
     lastScanRef.current = { code, at: now };
-
-    // Cache local : si code deja vu cette session, feedback instantane (pas de round-trip)
-    const cached = localCacheRef.current.get(code);
-    if (cached) {
-      // On affiche immediatement comme "deja scanne"
-      const instant: ScanResult = cached.ok
-        ? { ok: false, message: "Ticket déjà scanné dans cette session", ticket: cached.ticket, already_scanned: true }
-        : cached;
-      setLastResult(instant);
-      if (instant.already_scanned) toast.warn(instant.message);
-      else if (!instant.ok) toast.error(instant.message);
-      beep(440, 80);
-      return;
-    }
 
     try {
       const res = await scanApi.scan(code);
-      localCacheRef.current.set(code, res);
       setLastResult(res);
       if (res.ok) { toast.success(res.message); beep(880, 100); }
       else if (res.already_scanned) { toast.warn(res.message); beep(440, 80); }
@@ -107,12 +92,11 @@ export default function ControllerPage() {
       await qr.start(
         { facingMode: "environment" },
         {
-          fps: 30,                                              // capture quasi-instantanee
-          qrbox: { width: 240, height: 240 },                   // zone de detection focalisee
+          fps: 60,                                              // capture ultra-rapide
+          qrbox: { width: 300, height: 300 },                   // zone de detection plus large
           aspectRatio: 1.333,
           disableFlip: false,
           // Native browser BarcodeDetector quand dispo (Chrome) -> ~10x plus rapide
-          // que la lib JS pure
           experimentalFeatures: { useBarCodeDetectorIfSupported: true } as any,
         } as any,
         (decoded) => {
@@ -193,7 +177,7 @@ export default function ControllerPage() {
             {scanning && (
               <div className="pointer-events-none absolute inset-0">
                 <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] aspect-square border-2 border-accent rounded-xl"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] aspect-square border-2 border-accent rounded-xl"
                   style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)" }}
                 >
                   <div className="absolute -top-1 -left-1 w-8 h-8 border-t-[3px] border-l-[3px] border-accent-bright" />

@@ -67,9 +67,7 @@ def scan_stats(
     total = db.scalar(select(func.count(Ticket.id))) or 0
     scanned = (
         db.scalar(
-            select(func.count(Ticket.id)).where(
-                Ticket.status == TicketStatus.SCANNED
-            )
+            select(func.sum(Ticket.scan_count))
         )
         or 0
     )
@@ -123,7 +121,7 @@ def recent_scans(
 ) -> list[TicketOut]:
     rows = db.scalars(
         select(Ticket)
-        .where(Ticket.status == TicketStatus.SCANNED)
+        .where(Ticket.scan_count > 0)
         .order_by(Ticket.scanned_at.desc())
         .limit(limit)
     ).all()
