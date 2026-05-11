@@ -69,33 +69,37 @@ def render_ticket_pdf(
     c.setLineWidth(0.5)
     c.roundRect(card_margin + 2*mm, card_y + 2*mm, card_width - 4*mm, card_height - 4*mm, 8 * mm, stroke=1, fill=0)
 
-    # Header
-    c.setFillColor(ROSE_GOLD_LIGHT)
+    # Header (y: 260mm down to 230mm)
+    header_y = height - 40 * mm
+    c.setFillColor(ROSE_GOLD)
     c.setFont("Helvetica-Bold", 10)
-    c.drawCentredString(width / 2, height - 35 * mm, "★  IT  AWARDS  ★")
-
+    c.drawCentredString(width / 2, header_y, "★  IT  AWARDS  ★")
+    
     c.setFillColor(BORDEAUX)
     c.setFont("Times-Bold", 32)
-    c.drawCentredString(width / 2, height - 55 * mm, gala_name.upper())
+    c.drawCentredString(width / 2, header_y - 15 * mm, gala_name.upper())
     
     c.setFillColor(ROSE_GOLD)
     c.setFont("Helvetica-Bold", 12)
-    c.drawCentredString(width / 2, height - 62 * mm, f"ÉDITION {edition_year}")
+    c.drawCentredString(width / 2, header_y - 22 * mm, f"ÉDITION {edition_year}")
 
-    # Divider
-    c.setStrokeColor(ROSE_GOLD)
-    c.setLineWidth(0.5)
-    c.line(card_margin + 10*mm, height - 70*mm, width - card_margin - 10*mm, height - 70*mm)
-
-    # Ticket Type
+    # Attendee Info (y: 220mm)
+    info_y = header_y - 45 * mm
     c.setFillColor(ROSE_GOLD_LIGHT)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width / 2, height - 82 * mm, f"BILLET {ticket_type.upper()}")
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(width / 2, info_y, f"BILLET {ticket_type.upper()}")
+    
+    c.setFillColor(colors.whitesmoke)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(width / 2, info_y - 8 * mm, buyer_name)
+    if partner_name:
+        c.setFont("Helvetica", 11)
+        c.drawCentredString(width / 2, info_y - 14 * mm, f"Accompagné(e) de : {partner_name}")
 
-    # QR Code
-    qr_size = 70 * mm
+    # QR Code (y: 180mm down to 110mm)
+    qr_size = 65 * mm
     qr_x = (width - qr_size) / 2
-    qr_y = height - 160 * mm
+    qr_y = info_y - 85 * mm
     
     # White background for QR
     c.setFillColor(colors.white)
@@ -107,46 +111,40 @@ def render_ticket_pdf(
     c.drawImage(img, qr_x, qr_y, width=qr_size, height=qr_size)
 
     # Ticket Code
-    c.setFillColor(BLACK) # To contrast on white bg? No, wait, qr code is on white bg, but we want code below.
     c.setFillColor(ROSE_GOLD_LIGHT)
     c.setFont("Courier-Bold", 14)
     c.drawCentredString(width / 2, qr_y - 12 * mm, ticket_code)
 
-    # Details Section
+    # Event Details (y: 80mm)
     details_y = qr_y - 35 * mm
+    c.setStrokeColor(ROSE_GOLD)
+    c.setLineWidth(0.5)
+    c.line(card_margin + 20*mm, details_y + 5*mm, width - card_margin - 20*mm, details_y + 5*mm)
+
     c.setFont("Helvetica", 11)
     c.setFillColor(MUTED)
     
-    def draw_row(label, value, y):
+    def draw_detail(label, value, y):
         c.drawRightString(width / 2 - 5*mm, y, f"{label} :")
         c.setFillColor(colors.whitesmoke)
         c.drawString(width / 2 + 5*mm, y, str(value))
         c.setFillColor(MUTED)
 
-    curr_y = details_y
-    draw_row("Acheteur", buyer_name, curr_y)
-    curr_y -= 8 * mm
-    if partner_name:
-        draw_row("Partenaire", partner_name, curr_y)
-        curr_y -= 8 * mm
+    draw_detail("Date", event_date.strftime("%d %B %Y"), details_y - 5*mm)
+    draw_detail("Lieu", location, details_y - 12*mm)
     if attendee_status:
-        draw_row("Statut", attendee_status, curr_y)
-        curr_y -= 8 * mm
+        draw_detail("Statut", attendee_status, details_y - 19*mm)
     
-    draw_row("Date", event_date.strftime("%d %B %Y"), curr_y)
-    curr_y -= 8 * mm
-    draw_row("Lieu", location, curr_y)
-    
-    # Price
+    # Price (y: 40mm)
     c.setFillColor(ROSE_GOLD_LIGHT)
-    c.setFont("Helvetica-Bold", 18)
+    c.setFont("Helvetica-Bold", 22)
     price_str = f"{int(price):,} FCFA".replace(",", " ")
-    c.drawCentredString(width / 2, card_y + 15 * mm, price_str)
+    c.drawCentredString(width / 2, card_y + 20 * mm, price_str)
 
     # Fine print
     c.setFillColor(MUTED)
     c.setFont("Helvetica", 8)
-    c.drawCentredString(width / 2, card_y + 5 * mm, "Présentez ce QR Code à l'entrée. Billet personnel et unique.")
+    c.drawCentredString(width / 2, card_y + 8 * mm, "Présentez ce QR Code à l'entrée. Billet personnel et unique.")
 
     c.showPage()
     c.save()
