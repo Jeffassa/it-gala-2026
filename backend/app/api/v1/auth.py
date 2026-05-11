@@ -46,39 +46,43 @@ def register(
             detail="Email déjà utilisé",
         )
 
-    # Le matricule doit correspondre a un etudiant ESATIC importe par l'admin.
-    student = db.scalar(
-        select(Student).where(Student.matricule == payload.matricule)
-    )
-    if student is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                "Matricule inconnu : aucun etudiant ESATIC ne correspond a ce"
-                " matricule. Verifiez votre saisie ou contactez le comite"
-                " d'organisation."
-            ),
+    student: Student | None = None
+    if payload.matricule:
+        # Profil ESATIC : le matricule doit exister dans l'annuaire importe.
+        student = db.scalar(
+            select(Student).where(Student.matricule == payload.matricule)
         )
+        if student is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Matricule inconnu : aucun etudiant ESATIC ne correspond"
+                    " a ce matricule. Verifiez votre saisie, ou laissez le"
+                    " champ matricule vide et renseignez votre ecole si vous"
+                    " n'etes pas a l'ESATIC."
+                ),
+            )
 
-    # Un meme matricule ne peut creer qu'un seul compte voteur.
-    already = db.scalar(
-        select(User).where(User.matricule == payload.matricule)
-    )
-    if already:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ce matricule a deja ete utilise pour creer un compte.",
+        # Un meme matricule ne peut creer qu'un seul compte voteur.
+        already = db.scalar(
+            select(User).where(User.matricule == payload.matricule)
         )
+        if already:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ce matricule a deja ete utilise pour creer un compte.",
+            )
 
     user = User(
         full_name=payload.full_name,
         email=payload.email,
         hashed_password=hash_password(payload.password),
         role=UserRole.PARTICIPANT,
-        # On pre-remplit la promotion depuis l'annuaire ESATIC si l'utilisateur
-        # n'a rien fourni — ainsi on garde l'info de filiere/promotion sans
-        # bousculer le formulaire d'inscription.
-        school_promotion=payload.school_promotion or student.promotion,
+        # Si etudiant ESATIC : on pre-remplit la promotion depuis l'annuaire.
+        # Sinon : on garde le nom d'ecole saisi par l'utilisateur.
+        school_promotion=(
+            student.promotion if student else payload.school_promotion
+        ),
         matricule=payload.matricule,
     )
     db.add(user)

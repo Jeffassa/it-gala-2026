@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from app.models.user import UserRole
 
@@ -23,19 +23,48 @@ class LoginRequest(BaseModel):
 
 
 class RegisterRequest(BaseModel):
+    """Inscription d'un participant.
+
+    Deux profils sont acceptes :
+      - Etudiant ESATIC : fournit son matricule (verifie contre l'annuaire).
+      - Etudiant hors ESATIC : fournit le nom de son ecole (school_promotion).
+    Exactement l'un des deux est obligatoire.
+    """
+
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    matricule: str = Field(min_length=15, max_length=15)
-    school_promotion: str | None = None
+    matricule: str | None = Field(default=None, max_length=15)
+    school_promotion: str | None = Field(default=None, max_length=120)
 
     @field_validator("matricule")
     @classmethod
-    def validate_matricule(cls, v: str) -> str:
+    def validate_matricule(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
         v = v.strip().upper()
+        if v == "":
+            return None
         if not MATRICULE_REGEX.match(v):
             raise ValueError(MATRICULE_HELP)
         return v
+
+    @field_validator("school_promotion")
+    @classmethod
+    def clean_school(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        return v or None
+
+    @model_validator(mode="after")
+    def require_matricule_or_school(self) -> "RegisterRequest":
+        if not self.matricule and not self.school_promotion:
+            raise ValueError(
+                "Veuillez renseigner soit votre matricule ESATIC, "
+                "soit le nom de votre ecole."
+            )
+        return self
 
 
 class TokenResponse(BaseModel):

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowRight, Eye, EyeOff, IdCard, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, IdCard, Lock, Mail, School, User } from "lucide-react";
 
 import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
@@ -15,7 +15,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [affiliation, setAffiliation] = useState<"esatic" | "autre">("esatic");
   const [matricule, setMatricule] = useState("");
+  const [school, setSchool] = useState("");
   const setSession = useAuthStore((s) => s.setSession);
   const nav = useNavigate();
   const [params] = useSearchParams();
@@ -40,12 +42,20 @@ export default function LoginPage() {
         toast.success(`Bienvenue, ${res.user.full_name}`);
         redirectByRole(res.user.role);
       } else {
-        await authApi.register(fullName, email, password, matricule || undefined);
+        const isEsatic = affiliation === "esatic";
+        await authApi.register(
+          fullName,
+          email,
+          password,
+          isEsatic ? matricule : undefined,
+          isEsatic ? undefined : school,
+        );
         toast.success("Compte créé. Connectez-vous pour accéder à votre espace.");
         setMode("login");
         setPassword("");
         setFullName("");
         setMatricule("");
+        setSchool("");
       }
     } catch (err) {
       toast.error(apiError(err));
@@ -129,23 +139,71 @@ export default function LoginPage() {
                 <Field label="Nom complet" Icon={User}>
                   <input className="input pl-11" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Aïcha Koné" />
                 </Field>
-                <Field label="Matricule" Icon={IdCard}>
-                  <input
-                    className="input pl-11 uppercase"
-                    required
-                    minLength={15}
-                    maxLength={15}
-                    pattern="^\d{2}-ESATIC\d{4}[A-Z]{2}$"
-                    title="Format : AA-ESATICNNNNLL (ex : 26-ESATIC0001AB)"
-                    value={matricule}
-                    onChange={(e) => setMatricule(e.target.value.toUpperCase())}
-                    placeholder="26-ESATIC0001AB"
-                    autoComplete="off"
-                  />
-                  <p className="mt-1.5 text-xs text-ink-faint">
-                    Format : <span className="font-mono">AA-ESATICNNNNLL</span> — ex : <span className="font-mono">26-ESATIC0001AB</span>
-                  </p>
-                </Field>
+
+                {/* Choix affiliation : ESATIC ou autre école */}
+                <div>
+                  <label className="label">Affiliation</label>
+                  <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-bg-elev border border-line rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setAffiliation("esatic")}
+                      className={`py-2 rounded-lg text-sm font-semibold transition ${
+                        affiliation === "esatic"
+                          ? "bg-primary-gradient text-white shadow-primary"
+                          : "text-ink-muted hover:text-ink"
+                      }`}
+                    >
+                      Étudiant ESATIC
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAffiliation("autre")}
+                      className={`py-2 rounded-lg text-sm font-semibold transition ${
+                        affiliation === "autre"
+                          ? "bg-primary-gradient text-white shadow-primary"
+                          : "text-ink-muted hover:text-ink"
+                      }`}
+                    >
+                      Autre école
+                    </button>
+                  </div>
+                </div>
+
+                {affiliation === "esatic" ? (
+                  <Field label="Matricule" Icon={IdCard}>
+                    <input
+                      className="input pl-11 uppercase"
+                      required
+                      minLength={15}
+                      maxLength={15}
+                      pattern="^\d{2}-ESATIC\d{4}[A-Z]{2}$"
+                      title="Format : AA-ESATICNNNNLL (ex : 26-ESATIC0001AB)"
+                      value={matricule}
+                      onChange={(e) => setMatricule(e.target.value.toUpperCase())}
+                      placeholder="26-ESATIC0001AB"
+                      autoComplete="off"
+                    />
+                    <p className="mt-1.5 text-xs text-ink-faint">
+                      Format : <span className="font-mono">AA-ESATICNNNNLL</span> — ex : <span className="font-mono">26-ESATIC0001AB</span>
+                    </p>
+                  </Field>
+                ) : (
+                  <Field label="École" Icon={School}>
+                    <input
+                      className="input pl-11"
+                      required
+                      minLength={2}
+                      maxLength={120}
+                      value={school}
+                      onChange={(e) => setSchool(e.target.value)}
+                      placeholder="Ex : INP-HB, Université FHB…"
+                      autoComplete="organization"
+                    />
+                    <p className="mt-1.5 text-xs text-ink-faint">
+                      Indiquez le nom de votre école ou université.
+                    </p>
+                  </Field>
+                )}
               </>
             )}
             <Field label="Adresse email" Icon={Mail}>
