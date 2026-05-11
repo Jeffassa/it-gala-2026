@@ -50,6 +50,7 @@ def register(
         hashed_password=hash_password(payload.password),
         role=UserRole.PARTICIPANT,
         school_promotion=payload.school_promotion,
+        matricule=payload.matricule.strip().upper(),
     )
     db.add(user)
     db.commit()

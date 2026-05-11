@@ -53,6 +53,7 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserOut:
         hashed_password=hash_password(payload.password),
         role=payload.role,
         school_promotion=payload.school_promotion,
+        matricule=payload.matricule,
     )
     db.add(user)
     db.commit()

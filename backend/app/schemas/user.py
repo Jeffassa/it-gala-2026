@@ -11,6 +11,7 @@ class UserCreate(BaseModel):
     password: str
     role: UserRole = UserRole.PARTICIPANT
     school_promotion: str | None = None
+    matricule: str | None = None
 
 
 class UserUpdate(BaseModel):
@@ -18,6 +19,7 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     role: UserRole | None = None
     school_promotion: str | None = None
+    matricule: str | None = None
     is_active: bool | None = None
     password: str | None = None
 
@@ -28,6 +30,7 @@ class UserOut(BaseModel):
     email: EmailStr
     role: UserRole
     school_promotion: str | None = None
+    matricule: str | None = None
     is_active: bool
     created_at: datetime
 

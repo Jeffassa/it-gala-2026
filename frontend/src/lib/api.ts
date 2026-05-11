@@ -79,9 +79,9 @@ export function apiError(err: unknown): string {
 export const authApi = {
   login: (email: string, password: string) =>
     api.post<AuthResponse>("/auth/login", { email, password }).then((r) => r.data),
-  register: (full_name: string, email: string, password: string, school_promotion?: string) =>
+  register: (full_name: string, email: string, password: string, matricule?: string) =>
     api
-      .post<AuthResponse>("/auth/register", { full_name, email, password, school_promotion })
+      .post<AuthResponse>("/auth/register", { full_name, email, password, matricule })
       .then((r) => r.data),
   me: () => api.get<User>("/auth/me").then((r) => r.data),
   forgotPassword: (email: string) =>

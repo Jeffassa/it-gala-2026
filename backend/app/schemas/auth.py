@@ -12,6 +12,7 @@ class RegisterRequest(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+    matricule: str = Field(min_length=2, max_length=40)
     school_promotion: str | None = None
 
 
@@ -27,6 +28,7 @@ class UserOut(BaseModel):
     email: EmailStr
     role: UserRole
     school_promotion: str | None = None
+    matricule: str | None = None
     is_active: bool
 
     class Config:

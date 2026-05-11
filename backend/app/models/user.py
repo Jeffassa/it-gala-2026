@@ -28,6 +28,9 @@ class User(Base):
     school_promotion: Mapped[str | None] = mapped_column(
         String(60), nullable=True
     )
+    matricule: Mapped[str | None] = mapped_column(
+        String(40), nullable=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )

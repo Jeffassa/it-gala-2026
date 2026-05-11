@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, IdCard, Lock, Mail, User } from "lucide-react";
 
 import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [promo, setPromo] = useState("");
+  const [matricule, setMatricule] = useState("");
   const setSession = useAuthStore((s) => s.setSession);
   const nav = useNavigate();
   const [params] = useSearchParams();
@@ -40,12 +40,12 @@ export default function LoginPage() {
         toast.success(`Bienvenue, ${res.user.full_name}`);
         redirectByRole(res.user.role);
       } else {
-        await authApi.register(fullName, email, password, promo || undefined);
+        await authApi.register(fullName, email, password, matricule || undefined);
         toast.success("Compte créé. Connectez-vous pour accéder à votre espace.");
         setMode("login");
         setPassword("");
         setFullName("");
-        setPromo("");
+        setMatricule("");
       }
     } catch (err) {
       toast.error(apiError(err));
@@ -129,8 +129,17 @@ export default function LoginPage() {
                 <Field label="Nom complet" Icon={User}>
                   <input className="input pl-11" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Aïcha Koné" />
                 </Field>
-                <Field label="Promotion / École" Icon={User}>
-                  <input className="input pl-11" value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="L3 GLSI 2026" />
+                <Field label="Matricule" Icon={IdCard}>
+                  <input
+                    className="input pl-11 uppercase"
+                    required
+                    minLength={2}
+                    maxLength={40}
+                    value={matricule}
+                    onChange={(e) => setMatricule(e.target.value.toUpperCase())}
+                    placeholder="Ex : ESATIC2026-001"
+                    autoComplete="off"
+                  />
                 </Field>
               </>
             )}

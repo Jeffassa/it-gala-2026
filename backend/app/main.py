@@ -66,6 +66,16 @@ def _ensure_columns() -> None:
                     )
                 )
 
+    if "users" in insp.get_table_names():
+        user_cols = {c["name"] for c in insp.get_columns("users")}
+        if "matricule" not in user_cols:
+            with engine.begin() as conn:
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN matricule VARCHAR(40) DEFAULT NULL"
+                    )
+                )
+
     if "students" in insp.get_table_names():
         student_cols = {c["name"] for c in insp.get_columns("students")}
         if "classe" not in student_cols:
