@@ -504,7 +504,7 @@ export default function HomePage() {
               </div>
             </InfoCard>
             <InfoCard delay={300} Icon={Users} label="Public">
-              L'ensemble du corps éducatif de l'ESATIC, étudiants, alumni, partenaires et invités.
+              L'ensemble du corps éducatif de l'ESATIC, étudiants, alumnis, partenaires et invités.
             </InfoCard>
           </div>
         </div>
