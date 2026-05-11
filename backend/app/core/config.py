@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-change-me"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 720
+    # Claims iss/aud verifies par decode_token (defense en profondeur)
+    JWT_ISSUER: str = "it-gala-api"
+    JWT_AUDIENCE: str = "it-gala-app"
     DATABASE_URL: str = "postgresql+psycopg://gala:gala@localhost:5432/gala"
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
     CORS_ORIGIN_REGEX: str = (
