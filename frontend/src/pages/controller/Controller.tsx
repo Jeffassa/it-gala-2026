@@ -149,48 +149,64 @@ export default function ControllerPage() {
         <section className="bg-bg-elev border border-line rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-serif text-2xl font-bold">Scanner</h2>
-            {scanning ? (
-              <button onClick={stopCamera} className="btn btn-danger">
-                <X size={16} /> Arrêter
-              </button>
-            ) : (
-              <button onClick={startCamera} className="btn btn-primary btn-lg">
-                <Camera size={18} /> Contrôler
-              </button>
-            )}
+            <button onClick={startCamera} className="btn btn-primary btn-lg" disabled={scanning}>
+              <Camera size={18} /> Lancer le scan
+            </button>
           </div>
 
           <div className="relative aspect-video max-w-2xl mx-auto bg-black rounded-2xl overflow-hidden border border-line">
-            <div id="scanner-region" className="absolute inset-0 [&>video]:object-cover" />
-            {!scanning && (
-              <div className="absolute inset-0 grid place-items-center text-ink-muted text-center p-8">
-                <div className="flex flex-col items-center">
-                  <span className="w-16 h-16 grid place-items-center rounded-2xl bg-bg-elev2 border border-line text-ink-muted mb-4">
-                    <Camera size={28} strokeWidth={1.5} />
-                  </span>
-                  <p className="font-medium">Cliquez sur « Contrôler » pour activer la caméra</p>
-                  <p className="text-xs mt-2">Le scan QR se fait en temps réel.</p>
-                </div>
+            <div className="absolute inset-0 grid place-items-center text-ink-muted text-center p-8">
+              <div className="flex flex-col items-center">
+                <span className="w-16 h-16 grid place-items-center rounded-2xl bg-bg-elev2 border border-line text-ink-muted mb-4">
+                  <Camera size={28} strokeWidth={1.5} />
+                </span>
+                <p className="font-medium">Cliquez sur « Lancer le scan »</p>
+                <p className="text-xs mt-2">Le mode plein écran s'activera.</p>
               </div>
-            )}
-            {scanning && (
+            </div>
+          </div>
+
+          {/* Mode Plein Écran Immersif */}
+          {scanning && (
+            <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+              <div id="scanner-region" className="absolute inset-0 [&>video]:object-cover" />
+              
+              {/* Overlay visuel */}
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
-                  className="relative w-[70%] sm:w-[50%] aspect-square border-2 border-accent rounded-xl"
-                  style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)" }}
+                  className="relative w-[75%] aspect-square border-2 border-accent rounded-2xl"
+                  style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.7)" }}
                 >
-                  <div className="absolute -top-1 -left-1 w-8 h-8 border-t-[3px] border-l-[3px] border-accent-bright" />
-                  <div className="absolute -top-1 -right-1 w-8 h-8 border-t-[3px] border-r-[3px] border-accent-bright" />
-                  <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-[3px] border-l-[3px] border-accent-bright" />
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-[3px] border-r-[3px] border-accent-bright" />
-                  <div
-                    className="absolute inset-x-0 h-0.5 animate-scan-line"
-                    style={{ background: "linear-gradient(90deg, transparent, #FAB7B2, transparent)" }}
-                  />
+                  <div className="absolute -top-1 -left-1 w-10 h-10 border-t-[4px] border-l-[4px] border-accent-bright rounded-tl-xl" />
+                  <div className="absolute -top-1 -right-1 w-10 h-10 border-t-[4px] border-r-[4px] border-accent-bright rounded-tr-xl" />
+                  <div className="absolute -bottom-1 -left-1 w-10 h-10 border-b-[4px] border-l-[4px] border-accent-bright rounded-bl-xl" />
+                  <div className="absolute -bottom-1 -right-1 w-10 h-10 border-b-[4px] border-r-[4px] border-accent-bright rounded-br-xl" />
+                  <div className="absolute inset-x-0 h-0.5 animate-scan-line" style={{ background: "linear-gradient(90deg, transparent, #FAB7B2, transparent)" }} />
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Header flottant */}
+              <div className="relative p-6 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
+                <div className="flex flex-col">
+                  <span className="text-white font-serif text-xl font-bold">Scan en cours…</span>
+                  <span className="text-white/60 text-xs">Visez le QR code</span>
+                </div>
+                <button 
+                  onClick={stopCamera}
+                  className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 transition-all active:scale-90"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Footer avec stats rapides */}
+              <div className="mt-auto relative p-8 bg-gradient-to-t from-black/80 to-transparent text-center">
+                <p className="text-accent-bright font-serif text-lg font-bold">
+                  {stats.scanned_tickets} scannés · {stats.remaining} restants
+                </p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={submitManual} className="mt-5 max-w-md mx-auto flex gap-2">
             <input
