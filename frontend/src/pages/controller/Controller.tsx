@@ -160,8 +160,8 @@ export default function ControllerPage() {
             )}
           </div>
 
-          <div className="relative aspect-[4/3] max-w-2xl mx-auto bg-black rounded-2xl overflow-hidden border border-line">
-            <div id="scanner-region" className="absolute inset-0" />
+          <div className="relative aspect-video max-w-2xl mx-auto bg-black rounded-2xl overflow-hidden border border-line">
+            <div id="scanner-region" className="absolute inset-0 [&>video]:object-cover" />
             {!scanning && (
               <div className="absolute inset-0 grid place-items-center text-ink-muted text-center p-8">
                 <div className="flex flex-col items-center">
@@ -174,9 +174,9 @@ export default function ControllerPage() {
               </div>
             )}
             {scanning && (
-              <div className="pointer-events-none absolute inset-0">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] aspect-square border-2 border-accent rounded-xl"
+                  className="relative w-[70%] sm:w-[50%] aspect-square border-2 border-accent rounded-xl"
                   style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)" }}
                 >
                   <div className="absolute -top-1 -left-1 w-8 h-8 border-t-[3px] border-l-[3px] border-accent-bright" />
