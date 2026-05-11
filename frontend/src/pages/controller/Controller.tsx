@@ -92,12 +92,14 @@ export default function ControllerPage() {
       await qr.start(
         { facingMode: "environment" },
         {
-          fps: 60,                                              // capture ultra-rapide
-          qrbox: { width: 300, height: 300 },                   // zone de detection plus large
+          fps: 25,
+          qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.floor(minEdge * 0.8);
+            return { width: size, height: size };
+          },
           aspectRatio: 1.333,
           disableFlip: false,
-          // Native browser BarcodeDetector quand dispo (Chrome) -> ~10x plus rapide
-          experimentalFeatures: { useBarCodeDetectorIfSupported: true } as any,
         } as any,
         (decoded) => {
           const code = extractTicketCode(decoded);
