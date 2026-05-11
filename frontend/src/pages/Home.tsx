@@ -491,9 +491,24 @@ export default function HomePage() {
               {gala?.dress_code ?? "Tenue de soirée"}
             </InfoCard>
             <InfoCard delay={240} Icon={Drama} label="Programme">
-              <span className="block text-base text-ink-muted text-sm whitespace-pre-line">
-                {(gala?.program ?? "Cocktail · Cérémonie · Dîner · Soirée dansante").split("\n").slice(0, 4).join("\n")}
-              </span>
+              <div className="space-y-3 text-sm font-sans">
+                <div>
+                  <p className="flex items-baseline gap-2 mb-0.5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] text-accent">Matin</span>
+                    <span className="font-mono text-[11px] text-ink-faint">08h00 – 12h00</span>
+                  </p>
+                  <p className="font-serif text-base font-semibold mb-0.5">IT Connect</p>
+                  <p className="text-ink-muted text-xs leading-snug">Accueil → Cocktail & Networking</p>
+                </div>
+                <div className="pt-3 border-t border-line/60">
+                  <p className="flex items-baseline gap-2 mb-0.5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] text-accent">Soir</span>
+                    <span className="font-mono text-[11px] text-ink-faint">20h00 – 02h00</span>
+                  </p>
+                  <p className="font-serif text-base font-semibold mb-0.5">IT Gala</p>
+                  <p className="text-ink-muted text-xs leading-snug">Cocktail & installation → Bal poussière</p>
+                </div>
+              </div>
             </InfoCard>
             <InfoCard delay={300} Icon={Users} label="Public">
               L'ensemble du corps éducatif de l'ESATIC, étudiants, alumni, partenaires et invités.
