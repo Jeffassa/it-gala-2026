@@ -45,9 +45,9 @@ _QR_DARK = (26, 10, 5)
 # (facteur ~1.83x entre 96 DPI / CSS et le pixel natif du template),
 # donc les valeurs CSS spec sont multipliees par ce facteur.
 _NUMBER_FONT_SIZE = 28   # Poppins ExtraLight Italic — "Ticket N°{id}" (11pt)
-_PRICE_NUMBER_SIZE = 38  # Poppins Medium Italic — chiffres du prix (21px CSS)
-_PRICE_F_SIZE = 35       # Poppins Medium Italic — "F" majuscule    (19px CSS)
-_PRICE_CFA_SIZE = 29     # Poppins Medium Italic — "cfa" minuscules (16px CSS)
+_PRICE_NUMBER_SIZE = 82  # Poppins Medium Italic — chiffres du prix (45px CSS)
+_PRICE_F_SIZE = 79       # Poppins Medium Italic — "F" majuscule    (43px CSS)
+_PRICE_CFA_SIZE = 73     # Poppins Medium Italic — "cfa" minuscules (40px CSS)
 _CODE_FONT_SIZE = 14     # monospace fallback sous le QR
 
 
