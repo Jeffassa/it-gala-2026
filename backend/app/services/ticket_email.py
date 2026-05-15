@@ -1,33 +1,27 @@
-"""Send the ticket to the buyer by email with a styled HTML template + inline QR code."""
+"""Send the ticket to the buyer by email.
+
+The email body shows the same composite ticket image (template + dynamic
+overlays) that the cashier sees on screen, embedded inline via Content-ID.
+The PDF attached is the same image, wrapped in a printable A4 landscape page.
+"""
 
 from __future__ import annotations
 
-import io
 from datetime import datetime
 
-import qrcode
 from sqlalchemy.orm import Session
 
 from app.models.gala import Gala
 from app.models.ticket import Ticket
 from app.services.email import send_email
+from app.services.ticket_image import render_ticket_image
 from app.services.ticket_pdf import render_ticket_pdf
 
 TYPE_LABEL = {"solo": "Solo", "duo": "Duo", "gbonhi": "Gbonhi"}
 
 
-def _qr_png(code: str) -> bytes:
-    qr = qrcode.QRCode(version=None, box_size=8, border=2)
-    qr.add_data(code)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="#0E0808", back_color="#FFFFFF")
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
-
-
 def _format_money(value: float) -> str:
-    return f"{int(round(value)):,}".replace(",", " ") + " FCFA"
+    return f"{int(round(value)):,}".replace(",", " ") + " Fcfa"
 
 
 def _format_date(d: datetime) -> str:
@@ -51,20 +45,32 @@ def _format_date(d: datetime) -> str:
 def build_ticket_email_html(
     ticket: Ticket, gala: Gala, recipient_name: str | None = None
 ) -> str:
+    """Build the HTML body — features the composite ticket image inline."""
     name_to_use = recipient_name or ticket.buyer_full_name
     type_label = TYPE_LABEL.get(str(ticket.type), str(ticket.type))
+
     extra_rows = ""
     if ticket.partner_full_name:
-        extra_rows += f'<tr><td style="padding:6px 0;color:#A89A9A;font-size:13px;">Partenaire</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;font-weight:500;">{ticket.partner_full_name}</td></tr>'
+        extra_rows += (
+            '<tr><td style="padding:6px 0;color:#A89A9A;font-size:13px;">'
+            "Partenaire</td><td style=\"padding:6px 0;text-align:right;"
+            "color:#FFFFFF;font-weight:500;\">"
+            f"{ticket.partner_full_name}</td></tr>"
+        )
     if ticket.group_size:
-        extra_rows += f'<tr><td style="padding:6px 0;color:#A89A9A;font-size:13px;">Groupe</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;font-weight:500;">{ticket.group_size} personnes</td></tr>'
+        extra_rows += (
+            '<tr><td style="padding:6px 0;color:#A89A9A;font-size:13px;">'
+            "Groupe</td><td style=\"padding:6px 0;text-align:right;"
+            "color:#FFFFFF;font-weight:500;\">"
+            f"{ticket.group_size} personnes</td></tr>"
+        )
 
     return f"""<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#0E0808;font-family:Arial, Helvetica, sans-serif;color:#FFFFFF;">
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#0E0808;padding:32px 16px;">
     <tr><td align="center">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:linear-gradient(180deg,#1A1010 0%,#0E0808 100%);border:1px solid #3A2828;border-radius:20px;overflow:hidden;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="640" style="max-width:640px;background:linear-gradient(180deg,#1A1010 0%,#0E0808 100%);border:1px solid #3A2828;border-radius:20px;overflow:hidden;">
         <tr><td style="padding:32px 32px 8px 32px;">
           <table role="presentation" width="100%"><tr>
             <td style="font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#FFFFFF;letter-spacing:0.02em;">IT <span style="color:#F0A50C;">Gala</span></td>
@@ -73,40 +79,36 @@ def build_ticket_email_html(
         </td></tr>
         <tr><td style="padding:0 32px 24px 32px;">
           <p style="margin:18px 0 6px 0;font-size:11px;letter-spacing:0.25em;color:#F0A50C;text-transform:uppercase;">Votre billet d'entrée</p>
-          <h1 style="margin:0 0 8px 0;font-family:Georgia,serif;font-size:30px;line-height:1.15;color:#FFFFFF;">Bienvenue à la nuit de la <span style="color:#FBC23A;font-style:italic;">tech ivoirienne</span></h1>
-          <p style="margin:0;color:#C9B8B8;font-size:14px;line-height:1.6;">Bonjour {name_to_use}, votre place pour le IT Gala {gala.edition_year} est confirmée. Présentez le QR code ci-dessous à l'entrée pour la validation.</p>
+          <h1 style="margin:0 0 8px 0;font-family:Georgia,serif;font-size:28px;line-height:1.15;color:#FFFFFF;">Bienvenue à la nuit de la <span style="color:#FBC23A;font-style:italic;">tech ivoirienne</span></h1>
+          <p style="margin:0;color:#C9B8B8;font-size:14px;line-height:1.6;">Bonjour {name_to_use}, votre place pour le <strong>{gala.name} {gala.edition_year}</strong> est confirmée. Votre ticket figure ci-dessous — présentez le QR code à l'entrée pour la validation.</p>
         </td></tr>
 
-        <!-- Ticket card -->
-        <tr><td style="padding:0 24px 24px 24px;">
-          <table role="presentation" width="100%" style="background:linear-gradient(135deg,#330808 0%,#1A1010 100%);border:1px solid rgba(240,165,12,0.25);border-radius:18px;">
-            <tr><td style="padding:28px;text-align:center;">
-              <p style="margin:0 0 6px 0;font-family:Georgia,serif;font-size:13px;color:#F0A50C;letter-spacing:0.3em;text-transform:uppercase;">Ticket {type_label}</p>
-              <h2 style="margin:0 0 18px 0;font-family:Georgia,serif;font-size:28px;color:#FFFFFF;">{gala.name} <span style="color:#F0A50C;">{gala.edition_year}</span></h2>
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"><tr><td style="background:#FFFFFF;padding:14px;border-radius:12px;">
-                <img src="cid:qrcode" alt="QR Code" width="200" height="200" style="display:block;width:200px;height:200px;" />
-              </td></tr></table>
-              <p style="margin:18px 0 0 0;font-family:'Courier New',monospace;font-size:14px;letter-spacing:0.18em;color:#FBC23A;font-weight:bold;">{ticket.code}</p>
-              <p style="margin:6px 0 0 0;font-size:11px;color:#A89A9A;">À présenter à l'entrée pour la validation</p>
-            </td></tr>
-            <tr><td style="padding:0 28px;"><div style="border-top:1px dashed rgba(240,165,12,0.3);"></div></td></tr>
-            <tr><td style="padding:20px 28px 28px 28px;">
-              <table role="presentation" width="100%" style="font-size:13px;">
-                <tr><td style="padding:6px 0;color:#A89A9A;">Acheteur</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;font-weight:500;">{ticket.buyer_full_name}</td></tr>
-                <tr><td style="padding:6px 0;color:#A89A9A;">Email</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;">{ticket.buyer_email}</td></tr>
-                {extra_rows}
-                <tr><td style="padding:6px 0;color:#A89A9A;">Date</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;">{_format_date(gala.event_date)}</td></tr>
-                <tr><td style="padding:6px 0;color:#A89A9A;">Lieu</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;">{gala.location}</td></tr>
-                <tr><td colspan="2" style="padding-top:12px;"><div style="border-top:1px solid #3A2828;"></div></td></tr>
-                <tr><td style="padding:10px 0 0 0;color:#FFFFFF;font-weight:bold;font-size:14px;">Total payé</td><td style="padding:10px 0 0 0;text-align:right;color:#FBC23A;font-family:Georgia,serif;font-size:22px;font-weight:bold;">{_format_money(ticket.price)}</td></tr>
-              </table>
-            </td></tr>
+        <!-- Composite ticket image (template + overlays) -->
+        <tr><td style="padding:8px 24px 24px 24px;" align="center">
+          <img src="cid:ticket_image" alt="Votre ticket IT Gala 2026"
+               width="592"
+               style="display:block;width:100%;max-width:592px;height:auto;border-radius:12px;border:1px solid rgba(240,165,12,0.25);" />
+          <p style="margin:14px 0 0 0;font-family:'Courier New',monospace;font-size:13px;letter-spacing:0.18em;color:#FBC23A;font-weight:bold;">{ticket.code}</p>
+          <p style="margin:4px 0 0 0;font-size:11px;color:#A89A9A;">Type : Ticket {type_label}</p>
+        </td></tr>
+
+        <!-- Details -->
+        <tr><td style="padding:0 32px 28px 32px;">
+          <table role="presentation" width="100%" style="font-size:13px;">
+            <tr><td style="padding:6px 0;color:#A89A9A;">Acheteur</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;font-weight:500;">{ticket.buyer_full_name}</td></tr>
+            <tr><td style="padding:6px 0;color:#A89A9A;">Email</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;">{ticket.buyer_email}</td></tr>
+            {extra_rows}
+            <tr><td style="padding:6px 0;color:#A89A9A;">Date</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;">{_format_date(gala.event_date)}</td></tr>
+            <tr><td style="padding:6px 0;color:#A89A9A;">Lieu</td><td style="padding:6px 0;text-align:right;color:#FFFFFF;">{gala.location}</td></tr>
+            <tr><td colspan="2" style="padding-top:12px;"><div style="border-top:1px solid #3A2828;"></div></td></tr>
+            <tr><td style="padding:10px 0 0 0;color:#FFFFFF;font-weight:bold;font-size:14px;">Total payé</td><td style="padding:10px 0 0 0;text-align:right;color:#FBC23A;font-family:Georgia,serif;font-size:22px;font-weight:bold;">{_format_money(ticket.price)}</td></tr>
           </table>
         </td></tr>
 
-        <tr><td style="padding:8px 32px 32px 32px;">
+        <tr><td style="padding:0 32px 28px 32px;">
           <p style="margin:0;color:#A89A9A;font-size:12px;line-height:1.6;">
-            Ce billet est strictement personnel et ne peut être utilisé qu'une seule fois. Conservez précieusement cet email — il fait office de justificatif d'entrée.
+            Ce billet est strictement personnel et ne peut être utilisé qu'une seule fois.
+            Conservez précieusement cet email — le PDF ci-joint fait office de justificatif d'entrée.
             <br /><br />Pour toute question, répondez simplement à cet email.
           </p>
         </td></tr>
@@ -133,8 +135,10 @@ def build_ticket_email_text(
     return (
         f"Bonjour {name_to_use},\n\n"
         f"Votre billet pour le {gala.name} {gala.edition_year} est confirmé.\n"
-        f"Presentez le code ci-dessous a l'entree pour la validation.\n\n"
+        f"Le ticket figure dans la version HTML de cet email, ainsi qu'en\n"
+        f"piece jointe PDF. Presentez le QR code a l'entree pour la validation.\n\n"
         f"---------- VOTRE TICKET ----------\n"
+        f"N°            : {ticket.id}\n"
         f"Code          : {ticket.code}\n"
         f"Type          : Ticket {type_label}\n"
         f"Acheteur      : {ticket.buyer_full_name}{extras_block}\n"
@@ -142,8 +146,7 @@ def build_ticket_email_text(
         f"Lieu          : {gala.location}\n"
         f"Total paye    : {_format_money(ticket.price)}\n"
         f"-----------------------------------\n\n"
-        f"Ce billet est strictement personnel et ne peut etre utilise qu'une seule fois.\n"
-        f"Conservez precieusement cet email - il fait office de justificatif d'entree.\n\n"
+        f"Ce billet est strictement personnel et ne peut etre utilise qu'une seule fois.\n\n"
         f"L'equipe IT Gala\n"
     )
 
@@ -155,39 +158,35 @@ def send_ticket_email(
     recipient_name: str | None = None,
     recipient_email: str | None = None,
 ) -> None:
-    """Send the ticket by email — silent on failure (logged in notifications table)."""
+    """Send the ticket by email — silent on failure (logged in notifications)."""
     to_email = recipient_email or ticket.buyer_email
     if not to_email:
         return
     try:
-        png = _qr_png(ticket.code)
+        # Single source of truth for the visual : the composite PNG image.
+        png = render_ticket_image(
+            ticket_id=ticket.id,
+            ticket_code=ticket.code,
+            price=ticket.price,
+        )
+        pdf = render_ticket_pdf(
+            ticket_id=ticket.id,
+            ticket_code=ticket.code,
+            price=ticket.price,
+        )
+
         html = build_ticket_email_html(ticket, gala, recipient_name)
         text = build_ticket_email_text(ticket, gala, recipient_name)
-        
-        # Generate PDF attachment
-        pdf = render_ticket_pdf(
-            ticket_code=ticket.code,
-            buyer_name=recipient_name or ticket.buyer_full_name,
-            ticket_type=str(ticket.type),
-            gala_name=gala.name,
-            edition_year=gala.edition_year,
-            event_date=gala.event_date,
-            location=gala.location,
-            price=ticket.price,
-            attendee_status=ticket.attendee_status,
-            partner_name=ticket.partner_full_name,
-        )
-        
+
         send_email(
             db,
             to=to_email,
             subject=f"Votre billet — {gala.name} {gala.edition_year}",
             body=text,
             html=html,
-            inline_images=[("qrcode", png, "png")],
+            inline_images=[("ticket_image", png, "png")],
             attachments=[(f"ticket-{ticket.code}.pdf", pdf, "application/pdf")],
         )
-    except Exception as e:
+    except Exception:
         import logging
-        logging.error(f"Erreur lors de l'envoi du ticket par email: {e}")
-        # Failure already recorded in notifications table by send_email if it reached it
+        logging.exception("Erreur lors de l'envoi du ticket par email")
