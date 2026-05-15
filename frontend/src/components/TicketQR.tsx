@@ -22,7 +22,7 @@ import type { Gala, Ticket } from "@/lib/types";
 // Texte complet "Ticket N°{id}" : le template ne le contient pas.
 const POS_NUMBER = { left: "33%", top: "12%" };
 const POS_PRICE = { left: "66%", top: "87%" }; // centre du cadre dore
-const POS_QR = { right: "8.5%", top: "49%", width: "5%" }; // centre sur l'espace blanc
+const POS_QR = { right: "5.5%", top: "49%", width: "15%" }; // centre sur l'espace blanc
 
 const DEBUG_OVERLAYS = false;
 

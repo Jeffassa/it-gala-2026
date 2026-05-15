@@ -33,7 +33,7 @@ _NUMBER_POS_PCT = (0.33, 0.12)
 _PRICE_POS_PCT = (0.66, 0.87)
 # 3. QR : centre de la zone blanche
 _QR_CENTER_PCT = (0.89, 0.49)
-_QR_SIZE_PCT = 0.05  # 5% of template width (compact)
+_QR_SIZE_PCT = 0.15  # 15% of template width
 
 # Couleurs (alignees sur le rendu CSS frontend)
 _CREAM = (247, 231, 196)  # #f7e7c4 — texte sur fond brun (N° + Prix)
