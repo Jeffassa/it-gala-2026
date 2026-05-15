@@ -58,7 +58,7 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
             fontFamily: "'Poppins', sans-serif",
             fontWeight: 200,
             fontStyle: "italic",
-            fontSize: "11pt",
+            fontSize: "13pt",
             letterSpacing: "-0.01em",
             color: "#f7e7c4",
             lineHeight: 1,

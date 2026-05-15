@@ -44,7 +44,7 @@ _QR_DARK = (26, 10, 5)
 # Le template est rendu a plus haute resolution que l'ecran final
 # (facteur ~1.83x entre 96 DPI / CSS et le pixel natif du template),
 # donc les valeurs CSS spec sont multipliees par ce facteur.
-_NUMBER_FONT_SIZE = 28   # Poppins ExtraLight Italic — "Ticket N°{id}" (11pt)
+_NUMBER_FONT_SIZE = 32   # Poppins ExtraLight Italic — "Ticket N°{id}" (13pt)
 _PRICE_NUMBER_SIZE = 51  # Poppins Medium Italic — chiffres du prix (28px CSS)
 _PRICE_F_SIZE = 48       # Poppins Medium Italic — "F" majuscule    (26px CSS)
 _PRICE_CFA_SIZE = 42     # Poppins Medium Italic — "cfa" minuscules (23px CSS)
