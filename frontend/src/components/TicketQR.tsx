@@ -21,7 +21,7 @@ import type { Gala, Ticket } from "@/lib/types";
 // Positions calibrees sur la template (1654 x 472 px).
 // Texte complet "Ticket N°{id}" : le template ne le contient pas.
 const POS_NUMBER = { left: "33%", top: "12%" };
-const POS_PRICE = { left: "66%", top: "84%" }; // centre du cadre dore
+const POS_PRICE = { left: "65%", top: "84%" }; // centre du cadre dore
 const POS_QR = { right: "5.5%", top: "49%", width: "15%" }; // centre sur l'espace blanc
 
 const DEBUG_OVERLAYS = false;
@@ -86,13 +86,13 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
             outline: DEBUG_OVERLAYS ? "2px solid #3bb6ff" : undefined,
           }}
         >
-          <span style={{ fontSize: "27px", verticalAlign: "baseline" }}>
+          <span style={{ fontSize: "28px", verticalAlign: "baseline" }}>
             {new Intl.NumberFormat("fr-FR").format(Math.round(ticket.price))}
           </span>
-          <span style={{ fontSize: "23px", verticalAlign: "baseline" }}>
+          <span style={{ fontSize: "26px", verticalAlign: "baseline" }}>
             {" F"}
           </span>
-          <span style={{ fontSize: "22px", verticalAlign: "baseline" }}>
+          <span style={{ fontSize: "23px", verticalAlign: "baseline" }}>
             cfa
           </span>
         </span>

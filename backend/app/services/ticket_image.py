@@ -30,7 +30,7 @@ _TEMPLATE_H = 472
 #    Coordonnee = coin haut-gauche du texte.
 _NUMBER_POS_PCT = (0.33, 0.12)
 # 2. Prix : centre du cadre dore
-_PRICE_POS_PCT = (0.66, 0.84)
+_PRICE_POS_PCT = (0.65, 0.84)
 # 3. QR : centre de la zone blanche
 _QR_CENTER_PCT = (0.89, 0.49)
 _QR_SIZE_PCT = 0.15  # 15% of template width
@@ -45,9 +45,9 @@ _QR_DARK = (26, 10, 5)
 # (facteur ~1.83x entre 96 DPI / CSS et le pixel natif du template),
 # donc les valeurs CSS spec sont multipliees par ce facteur.
 _NUMBER_FONT_SIZE = 28   # Poppins ExtraLight Italic — "Ticket N°{id}" (11pt)
-_PRICE_NUMBER_SIZE = 49  # Poppins Medium Italic — chiffres du prix (27px CSS)
-_PRICE_F_SIZE = 42       # Poppins Medium Italic — "F" majuscule    (23px CSS)
-_PRICE_CFA_SIZE = 40     # Poppins Medium Italic — "cfa" minuscules (22px CSS)
+_PRICE_NUMBER_SIZE = 51  # Poppins Medium Italic — chiffres du prix (28px CSS)
+_PRICE_F_SIZE = 48       # Poppins Medium Italic — "F" majuscule    (26px CSS)
+_PRICE_CFA_SIZE = 42     # Poppins Medium Italic — "cfa" minuscules (23px CSS)
 _CODE_FONT_SIZE = 14     # monospace fallback sous le QR
 
 
