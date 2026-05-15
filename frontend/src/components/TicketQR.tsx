@@ -86,13 +86,13 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
             outline: DEBUG_OVERLAYS ? "2px solid #3bb6ff" : undefined,
           }}
         >
-          <span style={{ fontSize: "40px", verticalAlign: "baseline" }}>
+          <span style={{ fontSize: "28px", verticalAlign: "baseline" }}>
             {new Intl.NumberFormat("fr-FR").format(Math.round(ticket.price))}
           </span>
-          <span style={{ fontSize: "38px", verticalAlign: "baseline" }}>
+          <span style={{ fontSize: "26px", verticalAlign: "baseline" }}>
             {" F"}
           </span>
-          <span style={{ fontSize: "35px", verticalAlign: "baseline" }}>
+          <span style={{ fontSize: "23px", verticalAlign: "baseline" }}>
             cfa
           </span>
         </span>
