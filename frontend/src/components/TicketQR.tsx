@@ -1,7 +1,6 @@
 import QRCode from "qrcode";
 import { useEffect, useRef } from "react";
 
-import { formatMoney } from "@/lib/format";
 import type { Gala, Ticket } from "@/lib/types";
 
 /**
@@ -59,7 +58,7 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
             fontFamily: "'Poppins', sans-serif",
             fontWeight: 200,
             fontStyle: "italic",
-            fontSize: "9pt",
+            fontSize: "11pt",
             letterSpacing: "-0.01em",
             color: "#f7e7c4",
             lineHeight: 1,
@@ -70,7 +69,7 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
           Ticket N°{ticket.id}
         </span>
 
-        {/* 2. Prix — Poppins Medium Italic, centre du cadre dore */}
+        {/* 2. Prix — Poppins Medium Italic, 3 tailles (chiffres / F / cfa) */}
         <span
           className="absolute"
           style={{
@@ -80,7 +79,6 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
             fontFamily: "'Poppins', sans-serif",
             fontWeight: 500,
             fontStyle: "italic",
-            fontSize: "clamp(9px, 1.1vw, 14px)",
             color: "#f7e7c4",
             whiteSpace: "nowrap",
             lineHeight: 1,
@@ -88,7 +86,15 @@ export function TicketQR({ ticket }: { ticket: Ticket; gala?: Gala | null }) {
             outline: DEBUG_OVERLAYS ? "2px solid #3bb6ff" : undefined,
           }}
         >
-          {formatMoney(ticket.price, "Fcfa")}
+          <span style={{ fontSize: "16px", verticalAlign: "baseline" }}>
+            {new Intl.NumberFormat("fr-FR").format(Math.round(ticket.price))}
+          </span>
+          <span style={{ fontSize: "14px", verticalAlign: "baseline" }}>
+            {" F"}
+          </span>
+          <span style={{ fontSize: "11px", verticalAlign: "baseline" }}>
+            cfa
+          </span>
         </span>
 
         {/* 3. QR code + code alphanum, centres sur la zone blanche */}

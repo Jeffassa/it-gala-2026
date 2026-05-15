@@ -40,11 +40,14 @@ _CREAM = (247, 231, 196)  # #f7e7c4 — texte sur fond brun (N° + Prix)
 _DARK = (26, 10, 5)        # #1a0a05 — code alphanum sur fond blanc
 _QR_DARK = (26, 10, 5)
 
-# Tailles de police (relatives au template 1654 px de large) ---------------
-# 9pt = 12px @ 96 DPI ; on echantillonne legerement au-dessus car le
-# template est rendu a plus haute resolution (1654 px de large).
-_NUMBER_FONT_SIZE = 22   # Poppins ExtraLight Italic — "Ticket N°{id}" (9pt)
-_PRICE_FONT_SIZE = 22    # Poppins Medium Italic — tient dans le cadre dore
+# Tailles de police (px PIL au rendu natif 1654 px de large).
+# Le template est rendu a plus haute resolution que l'ecran final
+# (facteur ~1.83x entre 96 DPI / CSS et le pixel natif du template),
+# donc les valeurs CSS spec sont multipliees par ce facteur.
+_NUMBER_FONT_SIZE = 28   # Poppins ExtraLight Italic — "Ticket N°{id}" (11pt)
+_PRICE_NUMBER_SIZE = 30  # Poppins Medium Italic — chiffres du prix (16px CSS)
+_PRICE_F_SIZE = 26       # Poppins Medium Italic — "F" majuscule    (14px CSS)
+_PRICE_CFA_SIZE = 20     # Poppins Medium Italic — "cfa" minuscules (11px CSS)
 _CODE_FONT_SIZE = 14     # monospace fallback sous le QR
 
 
@@ -78,8 +81,64 @@ def _make_qr_image(code: str, size_px: int) -> Image.Image:
 
 
 def _format_price_fcfa(price: float) -> str:
-    """Format like '15 000 Fcfa' (matches the visual on the template)."""
+    """Format like '15 000 Fcfa' (matches the visual on the template).
+
+    Used for the plain-text email fallback. The visual ticket renders the
+    price in 3 size-differentiated segments via _draw_price_segments.
+    """
     return f"{int(round(price)):,}".replace(",", " ") + " Fcfa"
+
+
+def _draw_price_segments(
+    draw: ImageDraw.ImageDraw,
+    price: float,
+    center_xy: tuple[int, int],
+) -> None:
+    """Draw the price centered at (cx, cy) with 3 segments :
+
+        | chiffres (16px CSS / 30px PIL) | F (14/26) | cfa (11/20) |
+
+    Baselines are aligned : the smaller fonts hang from the baseline of
+    the largest, like proper typographic descenders.
+    """
+    cx, cy = center_xy
+
+    number_text = f"{int(round(price)):,}".replace(",", " ")
+    f_text = " F"   # leading space separates "15 000" from "Fcfa"
+    cfa_text = "cfa"
+
+    n_font = _load_font("Poppins-MediumItalic.ttf", _PRICE_NUMBER_SIZE)
+    f_font = _load_font("Poppins-MediumItalic.ttf", _PRICE_F_SIZE)
+    cfa_font = _load_font("Poppins-MediumItalic.ttf", _PRICE_CFA_SIZE)
+
+    def _measure(text: str, font: ImageFont.FreeTypeFont) -> int:
+        try:
+            bbox = draw.textbbox((0, 0), text, font=font)
+            return bbox[2] - bbox[0]
+        except AttributeError:
+            return draw.textsize(text, font=font)[0]
+
+    n_w = _measure(number_text, n_font)
+    f_w = _measure(f_text, f_font)
+    cfa_w = _measure(cfa_text, cfa_font)
+
+    total_w = n_w + f_w + cfa_w
+    start_x = cx - total_w // 2
+
+    # Baseline alignment : use the LARGEST font's ascent as the reference
+    # baseline. Each segment is drawn at y = baseline - its_own_ascent
+    # so all glyphs sit on the same baseline.
+    n_ascent, _ = n_font.getmetrics()
+    f_ascent, _ = f_font.getmetrics()
+    cfa_ascent, _ = cfa_font.getmetrics()
+
+    # On veut que la baseline tombe juste sous le centre vertical du
+    # cadre dore — donc baseline = cy + ascent_max // 2.
+    baseline_y = cy + n_ascent // 2
+
+    draw.text((start_x, baseline_y - n_ascent), number_text, font=n_font, fill=_CREAM)
+    draw.text((start_x + n_w, baseline_y - f_ascent), f_text, font=f_font, fill=_CREAM)
+    draw.text((start_x + n_w + f_w, baseline_y - cfa_ascent), cfa_text, font=cfa_font, fill=_CREAM)
 
 
 def render_ticket_image(
@@ -115,24 +174,10 @@ def render_ticket_image(
         fill=_CREAM,
     )
 
-    # ---- 2. Price (centered in gold-bordered box) ---------------------
-    price_font = _load_font("Poppins-MediumItalic.ttf", _PRICE_FONT_SIZE)
-    price_text = _format_price_fcfa(price)
-    try:
-        # Pillow >= 8.0 : textbbox is the precise API
-        bbox = draw.textbbox((0, 0), price_text, font=price_font)
-        text_w = bbox[2] - bbox[0]
-        text_h = bbox[3] - bbox[1]
-    except AttributeError:
-        text_w, text_h = draw.textsize(price_text, font=price_font)
+    # ---- 2. Price (centered in gold-bordered box, 3-size segments) ----
     price_cx = int(w * _PRICE_POS_PCT[0])
     price_cy = int(h * _PRICE_POS_PCT[1])
-    draw.text(
-        (price_cx - text_w // 2, price_cy - text_h // 2),
-        price_text,
-        font=price_font,
-        fill=_CREAM,
-    )
+    _draw_price_segments(draw, price, (price_cx, price_cy))
 
     # ---- 3. QR code (centered on white area) --------------------------
     qr_size = int(w * _QR_SIZE_PCT)
