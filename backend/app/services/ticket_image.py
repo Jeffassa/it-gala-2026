@@ -30,9 +30,11 @@ _TEMPLATE_H = 472
 #    Coordonnee = coin haut-gauche du texte.
 _NUMBER_POS_PCT = (0.33, 0.12)
 # 2. Nom de la personne qui a achete le ticket, centre sous "Behind the mask"
-_NAME_POS_PCT = (0.45, 0.67)
+#    Centre X mesure de "Behind the mask" = 49.4% (au pixel pres)
+_NAME_POS_PCT = (0.494, 0.68)
 # 3. Libelle du type (Ticket Solo / Duo / Gbonhi) : centre du cadre dore
-_TYPE_POS_PCT = (0.65, 0.89)
+#    Centre geometrique du cadre dore detecte = (64.9%, 84.3%)
+_TYPE_POS_PCT = (0.649, 0.843)
 # 4. QR : centre de la zone blanche
 _QR_CENTER_PCT = (0.89, 0.49)
 _QR_SIZE_PCT = 0.15  # 15% of template width

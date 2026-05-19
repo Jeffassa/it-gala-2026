@@ -22,8 +22,8 @@ import type { Gala, Ticket } from "@/lib/types";
 
 // Positions calibrees sur la template (1654 x 472 px).
 const POS_NUMBER = { left: "33%", top: "12%" };
-const POS_NAME = { left: "45%", top: "67%" }; // centre, sous "Behind the mask"
-const POS_TYPE = { left: "65%", top: "89%" }; // centre du cadre dore
+const POS_NAME = { left: "49.4%", top: "68%" }; // centre exact sous "Behind the mask"
+const POS_TYPE = { left: "64.9%", top: "84.3%" }; // centre exact du cadre dore
 const POS_QR = { right: "5.5%", top: "49%", width: "15%" }; // centre sur l'espace blanc
 
 const DEBUG_OVERLAYS = false;
