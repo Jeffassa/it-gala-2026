@@ -164,15 +164,23 @@ def send_ticket_email(
         return
     try:
         # Single source of truth for the visual : the composite PNG image.
+        # Pour les groupes (chaque attendee recoit son propre email), on utilise
+        # le nom de l'attendee ; sinon, le nom de l'acheteur principal.
+        display_name = recipient_name or ticket.buyer_full_name
+        ttype = str(ticket.type)
         png = render_ticket_image(
             ticket_id=ticket.id,
             ticket_code=ticket.code,
             price=ticket.price,
+            ticket_type=ttype,
+            buyer_name=display_name,
         )
         pdf = render_ticket_pdf(
             ticket_id=ticket.id,
             ticket_code=ticket.code,
             price=ticket.price,
+            ticket_type=ttype,
+            buyer_name=display_name,
         )
 
         html = build_ticket_email_html(ticket, gala, recipient_name)

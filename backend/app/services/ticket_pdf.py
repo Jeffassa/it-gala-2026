@@ -22,7 +22,9 @@ def render_ticket_pdf(
     *,
     ticket_id: int,
     ticket_code: str,
-    price: float,
+    price: float = 0.0,
+    ticket_type: str = "",
+    buyer_name: str = "",
     # Kept for backward compatibility; the composite image now carries
     # all the visual info, so these are unused but accepted to avoid
     # breaking existing callers.
@@ -37,6 +39,8 @@ def render_ticket_pdf(
         ticket_id=ticket_id,
         ticket_code=ticket_code,
         price=price,
+        ticket_type=ticket_type,
+        buyer_name=buyer_name,
     )
 
     buf = io.BytesIO()
