@@ -31,7 +31,7 @@ _TEMPLATE_H = 472
 _NUMBER_POS_PCT = (0.33, 0.12)
 # 2. Nom de la personne qui a achete le ticket, centre sous "Behind the mask"
 #    Centre X mesure de "Behind the mask" = 49.4% (au pixel pres)
-_NAME_POS_PCT = (0.494, 0.68)
+_NAME_POS_PCT = (0.494, 0.67)
 # 3. Libelle du type (Ticket Solo / Duo / Gbonhi) : centre du cadre dore
 #    Centre geometrique du cadre dore detecte = (64.9%, 84.3%)
 _TYPE_POS_PCT = (0.649, 0.843)
