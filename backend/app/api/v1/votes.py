@@ -39,10 +39,10 @@ def cast_vote(
         )
     )
     if existing is not None:
-        existing.nominee_id = nominee.id
-        db.commit()
-        db.refresh(existing)
-        return VoteOut.model_validate(existing)
+        raise HTTPException(
+            status_code=409,
+            detail="Vous avez déjà voté dans cette catégorie. Passez à une autre catégorie.",
+        )
 
     vote = Vote(
         user_id=current.id,
